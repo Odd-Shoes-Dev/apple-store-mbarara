@@ -3,13 +3,18 @@ import type { AppProps } from "next/app";
 import CartContext, {
   CartContextProps,
 } from "../components/context/CartContext";
+import Footer from "../components/Footer";
+import WatchShowcase from "../components/WatchShowcase";
 import { useState, ReactElement } from "react";
+import { useRouter } from "next/router";
 import _ from "lodash";
 import { Alert, Slide } from "@mui/material";
 import { getProductPrice } from "../utils/computed";
 import { Product } from "../server/domain/types";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const showFooter = !router.pathname.startsWith("/admin");
   const [items, setItems] = useState<Product[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [alert, setAlert] = useState<ReactElement | null>(null);
@@ -80,6 +85,8 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <CartContext.Provider value={cartContext}>
       <Component {...pageProps} />
+      {showFooter && <WatchShowcase />}
+      {showFooter && <Footer />}
     </CartContext.Provider>
   );
 }
