@@ -38,10 +38,6 @@ const Cancel: NextPage<CancelProps> = ({ hasSessionId }) => {
   }, []);
 
   if (!hasSessionId) {
-    useEffect(() => {
-      window.location.href = "/";
-    }, []);
-
     return (
       <>
         <Head>

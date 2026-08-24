@@ -1,6 +1,7 @@
-import { FunctionComponent, useContext } from "react";
+import { FunctionComponent, useContext, useEffect, useState } from "react";
 import { Fragment } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import AppleLogo from "../public/apple-icon.svg";
 import { ShoppingBagIcon } from "@heroicons/react/outline";
 import { Popover, Transition } from "@headlessui/react";
@@ -11,6 +12,7 @@ import {
   getProductImage,
   getProductName,
 } from "../utils/computed";
+import { NAV_CATEGORIES, CATEGORY_LABELS } from "../server/domain/categories";
 
 const Header: FunctionComponent = () => {
   const { items, remove, removeAll, total } = useContext(CartContext);
@@ -43,14 +45,65 @@ const Header: FunctionComponent = () => {
     window.location.href = data.redirectUrl;
   };
 
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const updateVisibility = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY <= 80) {
+        setHidden(false);
+      } else if (currentScrollY > lastScrollY) {
+        setHidden(true);
+      } else {
+        setHidden(false);
+      }
+
+      lastScrollY = currentScrollY;
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateVisibility);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="relative bg-white">
+    <header
+      className={`sticky top-0 z-40 bg-white transition-transform duration-300 ease-in-out ${
+        hidden ? "-translate-y-full" : "translate-y-0"
+      }`}
+    >
       <nav aria-label="Top" className="max-w-5xl mx-auto">
         <div className="relative px-5 sm:static sm:px-5 sm:pb-0 md:px-5 lg:px-0">
           <div className="h-16 flex items-center justify-between">
             {/* Logo */}
             <div className="flex-1 flex items-center">
-              <Image src={AppleLogo} width="50" height="50" alt="icon" />
+              <Link href="/" className="flex items-center">
+                <Image src={AppleLogo} width="50" height="50" alt="icon" />
+              </Link>
+            </div>
+
+            {/* Category links */}
+            <div className="hidden sm:flex items-center gap-6">
+              {NAV_CATEGORIES.map((category) => (
+                <Link
+                  key={category}
+                  href={{ pathname: "/", query: { category } }}
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  {CATEGORY_LABELS[category]}
+                </Link>
+              ))}
             </div>
 
             <div className="flex-1 flex items-center justify-end">
@@ -148,6 +201,32 @@ const Header: FunctionComponent = () => {
                   </Popover.Panel>
                 </Transition>
               </Popover>
+            </div>
+          </div>
+
+          {/* Category links (mobile second row) */}
+          <div className="flex sm:hidden flex-col gap-y-2 border-t py-2">
+            <div className="grid grid-cols-3 gap-x-2">
+              {NAV_CATEGORIES.slice(0, 3).map((category) => (
+                <Link
+                  key={category}
+                  href={{ pathname: "/", query: { category } }}
+                  className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center"
+                >
+                  {CATEGORY_LABELS[category]}
+                </Link>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-x-2">
+              {NAV_CATEGORIES.slice(3).map((category) => (
+                <Link
+                  key={category}
+                  href={{ pathname: "/", query: { category } }}
+                  className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center"
+                >
+                  {CATEGORY_LABELS[category]}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

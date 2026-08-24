@@ -38,10 +38,6 @@ const Success: NextPage<SuccessProps> = ({ hasSessionId }) => {
   }, []);
 
   if (!hasSessionId) {
-    useEffect(() => {
-      window.location.href = "/";
-    }, []);
-
     return (
       <>
         <Head>

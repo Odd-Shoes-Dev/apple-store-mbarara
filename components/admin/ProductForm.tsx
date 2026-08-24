@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/router";
 import { Product, ProductCategory } from "../../server/domain/types";
+import { CATEGORY_LABELS } from "../../server/domain/categories";
 
 type ImageDraft = { url: string; key: string };
 
@@ -8,7 +9,7 @@ type Props = {
   initial?: Product;
 };
 
-const CATEGORIES: ProductCategory[] = ["IPHONE", "MACBOOK", "WATCH", "OTHER"];
+const CATEGORIES: ProductCategory[] = ["IPHONE", "MACBOOK", "IPAD", "WATCH", "ACCESSORIES"];
 
 const ProductForm = ({ initial }: Props) => {
   const router = useRouter();
@@ -143,7 +144,7 @@ const ProductForm = ({ initial }: Props) => {
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {CATEGORY_LABELS[c]}
               </option>
             ))}
           </select>

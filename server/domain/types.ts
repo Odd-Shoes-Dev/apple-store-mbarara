@@ -1,4 +1,4 @@
-export type ProductCategory = "IPHONE" | "MACBOOK" | "WATCH" | "OTHER";
+export type ProductCategory = "IPHONE" | "MACBOOK" | "IPAD" | "WATCH" | "ACCESSORIES" | "OTHER";
 
 export type ProductImage = {
   id: string;

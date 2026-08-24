@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { requireAdminPage } from "../../../lib/adminAuth";
 import { Product, ProductCategory } from "../../../server/domain/types";
+import { CATEGORY_LABELS } from "../../../server/domain/categories";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const redirect = await requireAdminPage(context);
@@ -12,7 +13,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return { props: {} };
 };
 
-const CATEGORY_OPTIONS: (ProductCategory | "ALL")[] = ["ALL", "IPHONE", "MACBOOK", "WATCH", "OTHER"];
+const CATEGORY_OPTIONS: (ProductCategory | "ALL")[] = [
+  "ALL",
+  "IPHONE",
+  "MACBOOK",
+  "IPAD",
+  "WATCH",
+  "ACCESSORIES",
+  "OTHER",
+];
 
 const AdminProducts: NextPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -87,7 +96,7 @@ const AdminProducts: NextPage = () => {
             >
               {CATEGORY_OPTIONS.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {c === "ALL" ? "ALL" : CATEGORY_LABELS[c]}
                 </option>
               ))}
             </select>

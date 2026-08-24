@@ -5,7 +5,7 @@ import { newProductSchema } from "../../../../server/domain/validation";
 import { slugify } from "../../../../server/domain/slugify";
 import { ProductCategory } from "../../../../server/domain/types";
 
-const CATEGORIES: ProductCategory[] = ["IPHONE", "MACBOOK", "WATCH", "OTHER"];
+const CATEGORIES: ProductCategory[] = ["IPHONE", "MACBOOK", "IPAD", "WATCH", "ACCESSORIES", "OTHER"];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!(await requireAdminApi(req, res))) return;

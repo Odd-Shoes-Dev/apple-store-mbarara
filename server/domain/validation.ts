@@ -12,7 +12,7 @@ export const newProductSchema = z.object({
   description: z.string().min(1),
   priceCents: z.number().int().positive(),
   currency: z.string().min(1).default("usd"),
-  category: z.enum(["IPHONE", "MACBOOK", "WATCH", "OTHER"]),
+  category: z.enum(["IPHONE", "MACBOOK", "IPAD", "WATCH", "ACCESSORIES", "OTHER"]),
   active: z.boolean().default(true),
   images: z.array(productImageSchema).default([]),
 });

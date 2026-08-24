@@ -8,7 +8,8 @@
     "lint": "next lint",
     "db:migrate": "node scripts/migrate.js",
     "db:seed-from-stripe": "node scripts/seedFromStripe.js",
-    "db:seed-admin": "node scripts/seedAdmin.js"
+    "db:seed-admin": "node scripts/seedAdmin.js",
+    "db:migrate-images-to-imagekit": "node scripts/migrateImagesToImageKit.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
