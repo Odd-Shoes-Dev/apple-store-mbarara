@@ -1,10 +1,12 @@
 import { pool } from "../adapters/db/pg/client";
 import { PgProductRepository } from "../adapters/db/pg/ProductRepository.pg";
 import { PgAdminUserRepository } from "../adapters/db/pg/AdminUserRepository.pg";
+import { PgCategoryRepository } from "../adapters/db/pg/CategoryRepository.pg";
 import { ImageKitStorageProvider } from "../adapters/storage/imagekit";
 import { StripePaymentProvider } from "../adapters/payments/stripe";
 import { ProductRepository } from "../ports/ProductRepository";
 import { AdminUserRepository } from "../ports/AdminUserRepository";
+import { CategoryRepository } from "../ports/CategoryRepository";
 import { StorageProvider } from "../ports/StorageProvider";
 import { PaymentProvider } from "../ports/PaymentProvider";
 
@@ -33,6 +35,14 @@ export function getAdminUserRepository(): AdminUserRepository {
     adminUserRepository = new PgAdminUserRepository(pool);
   }
   return adminUserRepository;
+}
+
+let categoryRepository: CategoryRepository | undefined;
+export function getCategoryRepository(): CategoryRepository {
+  if (!categoryRepository) {
+    categoryRepository = new PgCategoryRepository(pool);
+  }
+  return categoryRepository;
 }
 
 let storageProvider: StorageProvider | undefined;

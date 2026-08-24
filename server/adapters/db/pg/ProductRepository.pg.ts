@@ -3,7 +3,6 @@ import { ProductRepository } from "../../../ports/ProductRepository";
 import {
   NewProductInput,
   Product,
-  ProductCategory,
   ProductListFilter,
   UpdateProductInput,
 } from "../../../domain/types";
@@ -15,10 +14,15 @@ type ProductRow = {
   description: string;
   price_cents: number;
   currency: string;
-  category: ProductCategory;
+  category_id: string | null;
   active: boolean;
   created_at: Date;
   updated_at: Date;
+  cat_id: string | null;
+  cat_name: string | null;
+  cat_slug: string | null;
+  cat_parent_id: string | null;
+  cat_position: number | null;
 };
 
 type ProductImageRow = {
@@ -29,6 +33,12 @@ type ProductImageRow = {
   position: number;
 };
 
+const PRODUCT_SELECT = `
+  SELECT p.*, c.id AS cat_id, c.name AS cat_name, c.slug AS cat_slug, c.parent_id AS cat_parent_id, c.position AS cat_position
+  FROM products p
+  LEFT JOIN categories c ON c.id = p.category_id
+`;
+
 function mapProduct(row: ProductRow, images: ProductImageRow[]): Product {
   return {
     id: row.id,
@@ -37,7 +47,15 @@ function mapProduct(row: ProductRow, images: ProductImageRow[]): Product {
     description: row.description,
     priceCents: row.price_cents,
     currency: row.currency,
-    category: row.category,
+    category: row.cat_id
+      ? {
+          id: row.cat_id,
+          name: row.cat_name!,
+          slug: row.cat_slug!,
+          parentId: row.cat_parent_id,
+          position: row.cat_position!,
+        }
+      : null,
     active: row.active,
     images: images
       .filter((image) => image.product_id === row.id)
@@ -74,23 +92,23 @@ export class PgProductRepository implements ProductRepository {
 
     if (filter.active !== undefined) {
       params.push(filter.active);
-      conditions.push(`active = $${params.length}`);
+      conditions.push(`p.active = $${params.length}`);
     }
 
-    if (filter.category) {
-      params.push(filter.category);
-      conditions.push(`category = $${params.length}`);
+    if (filter.categoryIds && filter.categoryIds.length > 0) {
+      params.push(filter.categoryIds);
+      conditions.push(`p.category_id = ANY($${params.length})`);
     }
 
     if (filter.search) {
       params.push(`%${filter.search}%`);
-      conditions.push(`name ILIKE $${params.length}`);
+      conditions.push(`p.name ILIKE $${params.length}`);
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
     const result = await this.db.query<ProductRow>(
-      `SELECT * FROM products ${where} ORDER BY created_at DESC`,
+      `${PRODUCT_SELECT} ${where} ORDER BY p.created_at DESC`,
       params
     );
 
@@ -99,7 +117,7 @@ export class PgProductRepository implements ProductRepository {
   }
 
   async getById(id: string): Promise<Product | null> {
-    const result = await this.db.query<ProductRow>(`SELECT * FROM products WHERE id = $1`, [id]);
+    const result = await this.db.query<ProductRow>(`${PRODUCT_SELECT} WHERE p.id = $1`, [id]);
     const row = result.rows[0];
     if (!row) {
       return null;
@@ -114,7 +132,7 @@ export class PgProductRepository implements ProductRepository {
       return [];
     }
 
-    const result = await this.db.query<ProductRow>(`SELECT * FROM products WHERE id = ANY($1)`, [ids]);
+    const result = await this.db.query<ProductRow>(`${PRODUCT_SELECT} WHERE p.id = ANY($1)`, [ids]);
     const images = await fetchImagesFor(this.db, result.rows.map((row) => row.id));
     return result.rows.map((row) => mapProduct(row, images));
   }
@@ -124,32 +142,33 @@ export class PgProductRepository implements ProductRepository {
     try {
       await client.query("BEGIN");
 
-      const productResult = await client.query<ProductRow>(
-        `INSERT INTO products (name, slug, description, price_cents, currency, category, active)
+      const productResult = await client.query<{ id: string }>(
+        `INSERT INTO products (name, slug, description, price_cents, currency, category_id, active)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING *`,
+         RETURNING id`,
         [
           input.name,
           input.slug,
           input.description,
           input.priceCents,
           input.currency,
-          input.category,
+          input.categoryId,
           input.active,
         ]
       );
-      const row = productResult.rows[0];
+      const id = productResult.rows[0].id;
 
       for (const image of input.images) {
         await client.query(
           `INSERT INTO product_images (product_id, url, key, position) VALUES ($1, $2, $3, $4)`,
-          [row.id, image.url, image.key, image.position]
+          [id, image.url, image.key, image.position]
         );
       }
 
       await client.query("COMMIT");
 
-      const images = await fetchImagesFor(this.db, [row.id]);
+      const row = (await client.query<ProductRow>(`${PRODUCT_SELECT} WHERE p.id = $1`, [id])).rows[0];
+      const images = await fetchImagesFor(this.db, [id]);
       return mapProduct(row, images);
     } catch (err) {
       await client.query("ROLLBACK");
@@ -173,7 +192,7 @@ export class PgProductRepository implements ProductRepository {
         ["description", "description"],
         ["priceCents", "price_cents"],
         ["currency", "currency"],
-        ["category", "category"],
+        ["categoryId", "category_id"],
         ["active", "active"],
       ];
 
@@ -184,17 +203,9 @@ export class PgProductRepository implements ProductRepository {
         }
       }
 
-      let row: ProductRow;
       if (sets.length > 0) {
         params.push(id);
-        const result = await client.query<ProductRow>(
-          `UPDATE products SET ${sets.join(", ")} WHERE id = $${params.length} RETURNING *`,
-          params
-        );
-        row = result.rows[0];
-      } else {
-        const result = await client.query<ProductRow>(`SELECT * FROM products WHERE id = $1`, [id]);
-        row = result.rows[0];
+        await client.query(`UPDATE products SET ${sets.join(", ")} WHERE id = $${params.length}`, params);
       }
 
       if (input.images) {
@@ -209,6 +220,7 @@ export class PgProductRepository implements ProductRepository {
 
       await client.query("COMMIT");
 
+      const row = (await client.query<ProductRow>(`${PRODUCT_SELECT} WHERE p.id = $1`, [id])).rows[0];
       const images = await fetchImagesFor(this.db, [id]);
       return mapProduct(row, images);
     } catch (err) {

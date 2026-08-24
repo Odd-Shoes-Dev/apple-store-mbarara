@@ -12,12 +12,20 @@ export const newProductSchema = z.object({
   description: z.string().min(1),
   priceCents: z.number().int().positive(),
   currency: z.string().min(1).default("usd"),
-  category: z.enum(["IPHONE", "MACBOOK", "IPAD", "WATCH", "ACCESSORIES", "OTHER"]),
+  categoryId: z.string().min(1),
   active: z.boolean().default(true),
   images: z.array(productImageSchema).default([]),
 });
 
 export const updateProductSchema = newProductSchema.partial();
+
+export const newCategorySchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  parentId: z.string().min(1).nullable(),
+});
+
+export const updateCategorySchema = newCategorySchema.partial();
 
 export const cartLineSchema = z.object({
   productId: z.string().min(1),

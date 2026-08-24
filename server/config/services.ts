@@ -1,8 +1,10 @@
 import { createCatalogService } from "../services/catalogService";
 import { createCheckoutService } from "../services/checkoutService";
 import { createAuthService } from "../services/authService";
+import { createCategoryService } from "../services/categoryService";
 import {
   getAdminUserRepository,
+  getCategoryRepository,
   getPaymentProvider,
   getProductRepository,
 } from "./providers";
@@ -29,4 +31,12 @@ export function getAuthService() {
     authService = createAuthService(getAdminUserRepository());
   }
   return authService;
+}
+
+let categoryService: ReturnType<typeof createCategoryService> | undefined;
+export function getCategoryService() {
+  if (!categoryService) {
+    categoryService = createCategoryService(getCategoryRepository());
+  }
+  return categoryService;
 }

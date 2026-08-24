@@ -1,7 +1,6 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Product, ProductCategory } from "../../server/domain/types";
-import { CATEGORY_LABELS } from "../../server/domain/categories";
+import { Category, Product } from "../../server/domain/types";
 
 type ImageDraft = { url: string; key: string };
 
@@ -9,7 +8,7 @@ type Props = {
   initial?: Product;
 };
 
-const CATEGORIES: ProductCategory[] = ["IPHONE", "MACBOOK", "IPAD", "WATCH", "ACCESSORIES"];
+type CategoryRow = Category & { parentName: string | null };
 
 const ProductForm = ({ initial }: Props) => {
   const router = useRouter();
@@ -18,7 +17,8 @@ const ProductForm = ({ initial }: Props) => {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial ? (initial.priceCents / 100).toString() : "");
-  const [category, setCategory] = useState<ProductCategory>(initial?.category ?? "IPHONE");
+  const [categoryId, setCategoryId] = useState<string>(initial?.category?.id ?? "");
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [active, setActive] = useState(initial?.active ?? true);
   const [images, setImages] = useState<ImageDraft[]>(
     initial?.images.map((image) => ({ url: image.url, key: image.key })) ?? []
@@ -26,6 +26,21 @@ const ProductForm = ({ initial }: Props) => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        const all: CategoryRow[] = data.categories ?? [];
+        setCategories(all);
+        if (!categoryId && all.length > 0) {
+          setCategoryId((all.find((c) => !c.parentId) ?? all[0]).id);
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const departments = categories.filter((c) => !c.parentId);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -76,7 +91,7 @@ const ProductForm = ({ initial }: Props) => {
       description,
       priceCents,
       currency: "usd",
-      category,
+      categoryId,
       active,
       images: images.map((image, index) => ({ ...image, position: index })),
     };
@@ -138,15 +153,24 @@ const ProductForm = ({ initial }: Props) => {
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700">Category</label>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as ProductCategory)}
+            required
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
             className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2"
           >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_LABELS[c]}
-              </option>
-            ))}
+            {departments.map((department) => {
+              const children = categories.filter((c) => c.parentId === department.id);
+              return (
+                <optgroup key={department.id} label={department.name}>
+                  <option value={department.id}>All {department.name}</option>
+                  {children.map((child) => (
+                    <option key={child.id} value={child.id}>
+                      {child.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
           </select>
         </div>
       </div>

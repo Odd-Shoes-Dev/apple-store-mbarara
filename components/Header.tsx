@@ -12,9 +12,13 @@ import {
   getProductImage,
   getProductName,
 } from "../utils/computed";
-import { NAV_CATEGORIES, CATEGORY_LABELS } from "../server/domain/categories";
+import { CategoryWithChildren } from "../server/domain/types";
 
-const Header: FunctionComponent = () => {
+type Props = {
+  navTree: CategoryWithChildren[];
+};
+
+const Header: FunctionComponent<Props> = ({ navTree }) => {
   const { items, remove, removeAll, total } = useContext(CartContext);
 
   const removeFromCart = (productID: string) => {
@@ -95,15 +99,53 @@ const Header: FunctionComponent = () => {
 
             {/* Category links */}
             <div className="hidden sm:flex items-center gap-6">
-              {NAV_CATEGORIES.map((category) => (
-                <Link
-                  key={category}
-                  href={{ pathname: "/", query: { category } }}
-                  className="text-sm font-medium text-gray-700 hover:text-gray-900"
-                >
-                  {CATEGORY_LABELS[category]}
-                </Link>
-              ))}
+              {navTree.map((department) =>
+                department.children.length === 0 ? (
+                  <Link
+                    key={department.id}
+                    href={{ pathname: "/", query: { category: department.slug } }}
+                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    {department.name}
+                  </Link>
+                ) : (
+                  <Popover key={department.id} className="relative">
+                    <Popover.Button className="text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
+                      {department.name}
+                    </Popover.Button>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-150"
+                      enterFrom="opacity-0 translate-y-1"
+                      enterTo="opacity-100 translate-y-0"
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100 translate-y-0"
+                      leaveTo="opacity-0 translate-y-1"
+                    >
+                      <Popover.Panel className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 bg-white shadow-lg rounded-md ring-1 ring-black ring-opacity-5 py-2 z-50">
+                        <div className="flex flex-col">
+                          <Link
+                            href={{ pathname: "/", query: { category: department.slug } }}
+                            className="px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+                          >
+                            {`All ${department.name}`}
+                          </Link>
+                          <div className="border-t my-1" />
+                          {department.children.map((model) => (
+                            <Link
+                              key={model.id}
+                              href={{ pathname: "/", query: { category: model.slug } }}
+                              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              {model.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </Popover.Panel>
+                    </Transition>
+                  </Popover>
+                )
+              )}
             </div>
 
             <div className="flex-1 flex items-center justify-end">
@@ -205,29 +247,16 @@ const Header: FunctionComponent = () => {
           </div>
 
           {/* Category links (mobile second row) */}
-          <div className="flex sm:hidden flex-col gap-y-2 border-t py-2">
-            <div className="grid grid-cols-3 gap-x-2">
-              {NAV_CATEGORIES.slice(0, 3).map((category) => (
-                <Link
-                  key={category}
-                  href={{ pathname: "/", query: { category } }}
-                  className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center"
-                >
-                  {CATEGORY_LABELS[category]}
-                </Link>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-x-2">
-              {NAV_CATEGORIES.slice(3).map((category) => (
-                <Link
-                  key={category}
-                  href={{ pathname: "/", query: { category } }}
-                  className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center"
-                >
-                  {CATEGORY_LABELS[category]}
-                </Link>
-              ))}
-            </div>
+          <div className="grid grid-cols-3 sm:hidden gap-x-2 gap-y-2 border-t py-2">
+            {navTree.map((department) => (
+              <Link
+                key={department.id}
+                href={`/category/${department.slug}`}
+                className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center"
+              >
+                {department.name}
+              </Link>
+            ))}
           </div>
         </div>
       </nav>

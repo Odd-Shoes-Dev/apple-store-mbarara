@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { requireAdminPage } from "../../../lib/adminAuth";
-import { Product, ProductCategory } from "../../../server/domain/types";
-import { CATEGORY_LABELS } from "../../../server/domain/categories";
+import { Category, Product } from "../../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const redirect = await requireAdminPage(context);
@@ -13,28 +12,27 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return { props: {} };
 };
 
-const CATEGORY_OPTIONS: (ProductCategory | "ALL")[] = [
-  "ALL",
-  "IPHONE",
-  "MACBOOK",
-  "IPAD",
-  "WATCH",
-  "ACCESSORIES",
-  "OTHER",
-];
+type CategoryRow = Category & { parentName: string | null };
 
 const AdminProducts: NextPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<ProductCategory | "ALL">("ALL");
+  const [categoryId, setCategoryId] = useState<string>("ALL");
   const [activeFilter, setActiveFilter] = useState<"ALL" | "true" | "false">("ALL");
+
+  useEffect(() => {
+    fetch("/api/admin/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data.categories ?? []));
+  }, []);
 
   const load = async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.set("search", search);
-    if (category !== "ALL") params.set("category", category);
+    if (categoryId !== "ALL") params.set("categoryId", categoryId);
     if (activeFilter !== "ALL") params.set("active", activeFilter);
 
     const res = await fetch(`/api/admin/products?${params.toString()}`);
@@ -46,7 +44,7 @@ const AdminProducts: NextPage = () => {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, category, activeFilter]);
+  }, [search, categoryId, activeFilter]);
 
   const archive = async (id: string) => {
     if (!confirm("Archive this product?")) return;
@@ -64,6 +62,9 @@ const AdminProducts: NextPage = () => {
           <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Products</h1>
             <div className="flex items-center gap-4">
+              <Link href="/admin/categories" className="text-sm text-gray-500 hover:text-gray-800">
+                Categories
+              </Link>
               <Link
                 href="/admin/products/new"
                 className="bg-slate-800 text-white rounded-md px-4 py-2 text-sm hover:bg-slate-900"
@@ -90,13 +91,14 @@ const AdminProducts: NextPage = () => {
               className="border border-gray-300 rounded-md px-3 py-2 text-sm"
             />
             <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as ProductCategory | "ALL")}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
               className="border border-gray-300 rounded-md px-3 py-2 text-sm"
             >
-              {CATEGORY_OPTIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c === "ALL" ? "ALL" : CATEGORY_LABELS[c]}
+              <option value="ALL">ALL</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.parentName ? `${c.parentName} — ${c.name}` : c.name}
                 </option>
               ))}
             </select>
@@ -137,7 +139,7 @@ const AdminProducts: NextPage = () => {
                         )}
                       </td>
                       <td className="px-4 py-2 text-sm text-gray-900">{product.name}</td>
-                      <td className="px-4 py-2 text-sm text-gray-500">{product.category}</td>
+                      <td className="px-4 py-2 text-sm text-gray-500">{product.category?.name ?? "—"}</td>
                       <td className="px-4 py-2 text-sm text-gray-500">
                         ${(product.priceCents / 100).toFixed(2)}
                       </td>

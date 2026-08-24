@@ -6,16 +6,16 @@ require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
 const Stripe = require("stripe");
 const { Pool } = require("pg");
 
-function deviceToCategory(device) {
+function deviceToCategorySlug(device) {
   switch (device) {
     case "iphone":
-      return "IPHONE";
+      return "iphone";
     case "macbook":
-      return "MACBOOK";
+      return "mac";
     case "watch":
-      return "WATCH";
+      return "apple-watch";
     default:
-      return "OTHER";
+      return "other";
   }
 }
 
@@ -38,6 +38,21 @@ async function main() {
 
   const stripe = new Stripe(stripeSecret, { apiVersion: "2023-08-16" });
   const pool = new Pool({ connectionString: databaseUrl });
+
+  const departments = [
+    ["Mac", "mac", 0],
+    ["iPad", "ipad", 1],
+    ["iPhone", "iphone", 2],
+    ["Apple Watch", "apple-watch", 3],
+    ["Apple Accessories", "apple-accessories", 4],
+    ["Other", "other", 5],
+  ];
+  for (const [name, slug, position] of departments) {
+    await pool.query(
+      `INSERT INTO categories (name, slug, position) VALUES ($1, $2, $3) ON CONFLICT (slug) DO NOTHING`,
+      [name, slug, position]
+    );
+  }
 
   let all = [];
   let hasMore = true;
@@ -77,8 +92,12 @@ async function main() {
         slug = `${slugBase}-${suffix}`;
       }
 
+      const categorySlug = deviceToCategorySlug(product.metadata?.device);
+      const category = await client.query("SELECT id FROM categories WHERE slug = $1", [categorySlug]);
+      const categoryId = category.rows[0].id;
+
       const result = await client.query(
-        `INSERT INTO products (name, slug, description, price_cents, currency, category, active)
+        `INSERT INTO products (name, slug, description, price_cents, currency, category_id, active)
          VALUES ($1, $2, $3, $4, $5, $6, true) RETURNING id`,
         [
           product.name,
@@ -86,7 +105,7 @@ async function main() {
           product.description ?? "",
           price.unit_amount ?? 0,
           price.currency,
-          deviceToCategory(product.metadata?.device),
+          categoryId,
         ]
       );
 

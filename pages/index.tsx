@@ -7,28 +7,38 @@ import Head from "next/head";
 import CartContext from "../components/context/CartContext";
 import { Slide } from "@mui/material";
 import Select, { SingleValue } from "react-select";
-import { getCatalogService } from "../server/config/services";
-import { Product, ProductCategory } from "../server/domain/types";
-import { NAV_CATEGORIES } from "../server/domain/categories";
+import { getCatalogService, getCategoryService } from "../server/config/services";
+import { Category, CategoryWithChildren, Product } from "../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { category } = context.query;
-  const selectedCategory =
-    typeof category === "string" && NAV_CATEGORIES.includes(category as ProductCategory)
-      ? (category as ProductCategory)
-      : undefined;
+  const { category: categorySlug } = context.query;
+  const categoryService = getCategoryService();
 
-  const products = await getCatalogService().listActiveProducts(selectedCategory);
+  const selectedCategory =
+    typeof categorySlug === "string" ? await categoryService.getBySlug(categorySlug) : null;
+
+  const categoryIds = selectedCategory
+    ? await categoryService.resolveFilterIds(selectedCategory.id)
+    : undefined;
+
+  const [products, navTree] = await Promise.all([
+    getCatalogService().listActiveProducts(categoryIds),
+    categoryService.getNavTree(),
+  ]);
 
   return {
     props: {
       products: JSON.parse(JSON.stringify(products)),
+      navTree: JSON.parse(JSON.stringify(navTree.filter((d) => d.slug !== "other"))),
+      selectedCategory: selectedCategory ? JSON.parse(JSON.stringify(selectedCategory)) : null,
     },
   };
 };
 
 type Props = {
   products: Product[];
+  navTree: CategoryWithChildren[];
+  selectedCategory: Category | null;
 };
 
 interface Option {
@@ -36,7 +46,7 @@ interface Option {
   label: string;
 }
 
-const Home: NextPage<Props> = ({ products }) => {
+const Home: NextPage<Props> = ({ products, navTree, selectedCategory }) => {
   const [selectedOption, setSelectedOption] = useState<Option | null>({
     value: "new",
     label: "Sort By Addition Date",
@@ -111,16 +121,27 @@ const Home: NextPage<Props> = ({ products }) => {
         <title>Apple Store</title>
       </Head>
       <main className="bg-gray-100 min-h-screen">
-        <Header />
+        <Header navTree={navTree} />
         <div className="max-w-5xl mx-auto py-8 px-4">
+          {selectedCategory && (
+            <h1 className="text-2xl font-semibold text-gray-900 px-6 sm:px-8 lg:px-0 mb-4">
+              {selectedCategory.name}
+            </h1>
+          )}
           <div className="px-6 sm:px-8 lg:px-0">
             <Select
+              instanceId="sort-select"
               value={selectedOption}
               onChange={handleSelectChange}
               options={options}
               placeholder="Select sorting"
             />
           </div>
+          {!loading && products.length === 0 && selectedCategory && (
+            <p className="text-center text-gray-500 mt-12">
+              No items currently available under {selectedCategory.name}.
+            </p>
+          )}
           <div className="mt-8 grid justify-items-center grid-cols-1 gap-y-20 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-3 xl:gap-x-8">
             {!loading && sortedProducts().map((p) => (
               <ProductCard product={p} key={p.id} />

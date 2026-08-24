@@ -16,8 +16,8 @@ import { useContext, useState, useEffect } from "react";
 import CartContext from "../../components/context/CartContext";
 import { useRouter } from "next/router";
 import { Slide } from "@mui/material";
-import { getCatalogService } from "../../server/config/services";
-import { Product } from "../../server/domain/types";
+import { getCatalogService, getCategoryService } from "../../server/config/services";
+import { CategoryWithChildren, Product } from "../../server/domain/types";
 
 interface CustomContext extends GetServerSidePropsContext {
   query: {
@@ -25,21 +25,30 @@ interface CustomContext extends GetServerSidePropsContext {
   };
 }
 
-export const getServerSideProps: GetServerSideProps = async (
+type Props = {
+  product: Product | null;
+  navTree: CategoryWithChildren[];
+};
+
+export const getServerSideProps: GetServerSideProps<Props> = async (
   context: CustomContext
 ) => {
   const { pageId } = context.query;
 
-  const product = pageId ? await getCatalogService().getActiveProductById(pageId) : null;
+  const [product, navTree] = await Promise.all([
+    pageId ? getCatalogService().getActiveProductById(pageId) : Promise.resolve(null),
+    getCategoryService().getNavTree(),
+  ]);
 
   return {
     props: {
       product: product ? JSON.parse(JSON.stringify(product)) : null,
+      navTree: JSON.parse(JSON.stringify(navTree.filter((d) => d.slug !== "other"))),
     },
   };
 };
 
-const ProductPage: NextPage<{ product: Product | null }> = ({ product }) => {
+const ProductPage: NextPage<Props> = ({ product, navTree }) => {
   const { add, alert = null, isAlertVisible } = useContext(CartContext);
   const [hideAlert, setHideAlert] = useState(false);
 
@@ -83,7 +92,7 @@ const ProductPage: NextPage<{ product: Product | null }> = ({ product }) => {
           <title>Apple Store</title>
         </Head>
         <main>
-          <Header />
+          <Header navTree={navTree} />
           <p>Product not found</p>
         </main>
       </>
@@ -98,7 +107,7 @@ const ProductPage: NextPage<{ product: Product | null }> = ({ product }) => {
       </Head>
 
       <main>
-        <Header />
+        <Header navTree={navTree} />
         <div className="bg-gray-100 min-h-screen relative w-full">
           <div className="w-full max-w-5xl px-8 mx-auto sm:px-8 lg:px-3">
             <button

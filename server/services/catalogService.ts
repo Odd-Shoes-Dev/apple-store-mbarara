@@ -8,8 +8,8 @@ import {
 
 export function createCatalogService(productRepository: ProductRepository) {
   return {
-    listActiveProducts(category?: Product["category"]): Promise<Product[]> {
-      return productRepository.list({ active: true, category });
+    listActiveProducts(categoryIds?: string[]): Promise<Product[]> {
+      return productRepository.list({ active: true, categoryIds });
     },
 
     listAllProducts(filter: ProductListFilter): Promise<Product[]> {
