@@ -211,7 +211,7 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
                           <div className="flex justify-center items-center py-3">
                             <p className="text-lg font-semibold text-gray-600">
                               Total:{" "}
-                              <span className="text-teal-600">{formatPrice(total)}</span>
+                              <span className="text-teal-600">{formatPrice(total ?? 0)}</span>
                             </p>
                           </div>
                         )}
