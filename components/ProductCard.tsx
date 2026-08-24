@@ -2,6 +2,7 @@ import { FunctionComponent, useContext } from "react";
 import CartContext from "./context/CartContext";
 import {
   getProductPrice,
+  formatPrice,
   getProductDescription,
   getProductImage,
   getProductName,
@@ -40,7 +41,7 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
               className="absolute bottom-0 right-0 h-min w-min p-2 bg-gradient-to-t bg-[rgba(0,0,0,0.8)] rounded-md"
             >
               <p className="text-md font-bold text-white">
-                ${getProductPrice(product)}
+                {formatPrice(getProductPrice(product))}
               </p>
             </div>
           </div>

@@ -12,6 +12,11 @@ export function getProductDescription(product: Product) {
   return product?.description ?? "";
 }
 
-export function getProductPrice(product: Product) {
+export function getProductPrice(product: Product): number {
   return product?.priceCents / 100;
+}
+
+export function formatPrice(amount: number): string {
+  const currency = process.env.NEXT_PUBLIC_CURRENCY || "USD";
+  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
 }

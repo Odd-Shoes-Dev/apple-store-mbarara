@@ -8,6 +8,7 @@ import { Popover, Transition } from "@headlessui/react";
 import CartContext from "./context/CartContext";
 import {
   getProductPrice,
+  formatPrice,
   getProductDescription,
   getProductImage,
   getProductName,
@@ -188,7 +189,7 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
                                   <div className="flex justify-between text-base font-medium text-gray-900">
                                     <h3>{getProductName(product)}</h3>
                                     <p className="ml-4 text-teal-600">
-                                      ${getProductPrice(product)}
+                                      {formatPrice(getProductPrice(product))}
                                     </p>
                                   </div>
                                 </div>
@@ -210,7 +211,7 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
                           <div className="flex justify-center items-center py-3">
                             <p className="text-lg font-semibold text-gray-600">
                               Total:{" "}
-                              <span className="text-teal-600">${total}</span>
+                              <span className="text-teal-600">{formatPrice(total)}</span>
                             </p>
                           </div>
                         )}

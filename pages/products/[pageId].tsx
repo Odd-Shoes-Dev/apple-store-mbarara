@@ -8,6 +8,7 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import Header from "../../components/Header";
 import {
   getProductPrice,
+  formatPrice,
   getProductDescription,
   getProductImage,
   getProductName,
@@ -128,7 +129,7 @@ const ProductPage: NextPage<Props> = ({ product, navTree }) => {
           <p className=" text-xl text-center italic px-4 mt-6">
             {getProductDescription(product)}
           </p>
-          <p className=" text-5xl text-center mt-8 tracking-wide text-gray-700">{`${getProductPrice(product)}$`}</p>
+          <p className=" text-5xl text-center mt-8 tracking-wide text-gray-700">{formatPrice(getProductPrice(product))}</p>
 
           <div className="mt-4">
             <button
