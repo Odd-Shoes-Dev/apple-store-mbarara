@@ -28,20 +28,19 @@ const Header: FunctionComponent = () => {
   };
 
   const checkout = async () => {
-    const lineItems = items?.map((product) => {
-      return {
-        price: product.id,
-        quantity: 1,
-      };
-    });
+    const cartItems = items?.map((product) => ({
+      productId: product.id,
+      quantity: 1,
+    }));
 
     const res = await fetch("/api/checkout", {
       method: "POST",
-      body: JSON.stringify({ lineItems: lineItems }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: cartItems }),
     });
 
-    const b = await res.json();
-    window.location.href = b.session?.url;
+    const data = await res.json();
+    window.location.href = data.redirectUrl;
   };
 
   return (
@@ -82,12 +81,12 @@ const Header: FunctionComponent = () => {
                     <div className="max-w-2xl mx-auto px-4">
                       <ul role="list" className="divide-y divide-gray-200">
                         {items?.length !== 0 &&
-                          items?.map((price) => (
-                            <li key={price.id} className="py-6 flex">
+                          items?.map((product) => (
+                            <li key={product.id} className="py-6 flex">
                               <div className="flex-shrink-0 w-24 h-24 border border-gray-200 rounded-md overflow-hidden">
                                 <img
-                                  src={getProductImage(price.product)}
-                                  alt={getProductDescription(price.product)}
+                                  src={getProductImage(product)}
+                                  alt={getProductDescription(product)}
                                   className="w-full h-full object-center object-cover"
                                 />
                               </div>
@@ -95,16 +94,16 @@ const Header: FunctionComponent = () => {
                               <div className="ml-4 flex-1 flex flex-col">
                                 <div>
                                   <div className="flex justify-between text-base font-medium text-gray-900">
-                                    <h3>{getProductName(price.product)}</h3>
+                                    <h3>{getProductName(product)}</h3>
                                     <p className="ml-4 text-teal-600">
-                                      ${getProductPrice(price)}
+                                      ${getProductPrice(product)}
                                     </p>
                                   </div>
                                 </div>
                                 <div className="flex-1 flex items-center justify-between text-sm">
                                   <div className="flex">
                                     <button
-                                      onClick={(e) => removeFromCart(price.id)}
+                                      onClick={(e) => removeFromCart(product.id)}
                                       type="button"
                                       className="font-medium text-rose-600 hover:text-rose-500"
                                     >

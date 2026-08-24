@@ -1,15 +1,17 @@
-export function getProductName(product: any) {
+import { Product } from "../server/domain/types";
+
+export function getProductName(product: Product) {
   return product?.name;
 }
 
-export function getProductImage(product: any) {
-  return product?.images[0]
+export function getProductImage(product: Product) {
+  return product?.images[0]?.url;
 }
 
-export function getProductDescription(product: any) {
-  return product?.description ?? ''
+export function getProductDescription(product: Product) {
+  return product?.description ?? "";
 }
 
-export function getProductPrice(product: any) {
-  return parseInt(product?.unit_amount) / 100;
+export function getProductPrice(product: Product) {
+  return product?.priceCents / 100;
 }

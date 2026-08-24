@@ -1,5 +1,4 @@
 import type { GetServerSideProps, NextPage } from "next";
-import Stripe from "stripe";
 import ProductCard from "../components/ProductCard";
 import Header from "../components/Header";
 import { useState, useEffect, useContext } from "react";
@@ -8,69 +7,31 @@ import Head from "next/head";
 import CartContext from "../components/context/CartContext";
 import { Slide } from "@mui/material";
 import Select, { SingleValue } from "react-select";
-
-interface Product extends Stripe.Product {}
-
-interface Price extends Stripe.Price {
-  product: string | Product | Stripe.DeletedProduct;
-}
+import { getCatalogService } from "../server/config/services";
+import { Product } from "../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET ?? "", {
-    apiVersion: "2023-08-16",
-  });
+  const all = await getCatalogService().listActiveProducts();
 
-  let all: Price[] = [];
-  let hasMore = true;
-  let startingAfter: string | undefined;
-
-  while (hasMore) {
-    const res = await stripe.prices.list({
-      expand: ["data.product"],
-      limit: 100,
-      starting_after: startingAfter,
-    });
-
-    const prices = res.data.filter((price) => price.active);
-    all = [...all, ...prices];
-
-    hasMore = res.has_more;
-
-    if (hasMore) {
-      startingAfter = prices[prices.length - 1].id;
-    }
-  }
-
-  const iphones = all.filter((item) => {
-    const product = item.product as any;
-    return product.metadata?.device === "iphone";
-  });
-
-  const macbooks = all.filter((item) => {
-    const product = item.product as any;
-    return product.metadata?.device === "macbook";
-  });
-
-  const watches = all.filter((item) => {
-    const product = item.product as any;
-    return product.metadata?.device === "watch";
-  });
+  const iphones = all.filter((product) => product.category === "IPHONE");
+  const macbooks = all.filter((product) => product.category === "MACBOOK");
+  const watches = all.filter((product) => product.category === "WATCH");
 
   return {
     props: {
-      all,
-      iphones,
-      macbooks,
-      watches,
+      all: JSON.parse(JSON.stringify(all)),
+      iphones: JSON.parse(JSON.stringify(iphones)),
+      macbooks: JSON.parse(JSON.stringify(macbooks)),
+      watches: JSON.parse(JSON.stringify(watches)),
     },
   };
 };
 
 type Props = {
-  all: Stripe.Price[];
-  iphones: Stripe.Price[];
-  macbooks: Stripe.Price[];
-  watches: Stripe.Price[];
+  all: Product[];
+  iphones: Product[];
+  macbooks: Product[];
+  watches: Product[];
 };
 
 interface CategorieState {
@@ -178,29 +139,24 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks, watches }) => {
     });
   };
 
-  const applySorting = (
-    items: Stripe.Price[],
-    option: Option | null
-  ): Stripe.Price[] => {
+  const applySorting = (items: Product[], option: Option | null): Product[] => {
     if (!option) return items;
 
-    let selectedItems: Stripe.Price[] = [...items];
+    let selectedItems: Product[] = [...items];
 
     switch (option.value) {
       case "highToLow": {
-        selectedItems.sort(
-          (a, b) => (b.unit_amount ?? 0) - (a.unit_amount ?? 0)
-        );
+        selectedItems.sort((a, b) => b.priceCents - a.priceCents);
         break;
       }
       case "lowToHigh": {
-        selectedItems.sort(
-          (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
-        );
+        selectedItems.sort((a, b) => a.priceCents - b.priceCents);
         break;
       }
       case "new": {
-        selectedItems.sort((a, b) => (b.created ?? 0) - (a.created ?? 0));
+        selectedItems.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
         break;
       }
       default: {
@@ -211,7 +167,7 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks, watches }) => {
     return selectedItems;
   };
 
-  const filteredItems = (): Stripe.Price[] => {
+  const filteredItems = (): Product[] => {
     switch (true) {
       case categorie.all:
         return applySorting(all, selectedOption);
@@ -290,7 +246,7 @@ const Home: NextPage<Props> = ({ all, iphones, macbooks, watches }) => {
           </div>
           <div className="mt-8 grid justify-items-center grid-cols-1 gap-y-20 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-3 xl:gap-x-8">
             {!loading && filteredItems().map((p) => (
-              <ProductCard cardId={p.id} key={p.id} price={p} />
+              <ProductCard product={p} key={p.id} />
             ))}
           </div>
           <div

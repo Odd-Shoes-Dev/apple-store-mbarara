@@ -4,9 +4,7 @@ import type {
   NextPage,
 } from "next";
 import Head from "next/head";
-import { CardProps } from "../../components/ProductCard";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import Stripe from "stripe";
 import Header from "../../components/Header";
 import {
   getProductPrice,
@@ -18,12 +16,8 @@ import { useContext, useState, useEffect } from "react";
 import CartContext from "../../components/context/CartContext";
 import { useRouter } from "next/router";
 import { Slide } from "@mui/material";
-
-interface Product extends Stripe.Product {}
-
-interface Price extends Stripe.Price {
-  product: string | Product | Stripe.DeletedProduct;
-}
+import { getCatalogService } from "../../server/config/services";
+import { Product } from "../../server/domain/types";
 
 interface CustomContext extends GetServerSidePropsContext {
   query: {
@@ -36,60 +30,16 @@ export const getServerSideProps: GetServerSideProps = async (
 ) => {
   const { pageId } = context.query;
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET ?? "", {
-    apiVersion: "2023-08-16",
-  });
-
-  let all: Price[] = [];
-  let hasMore = true;
-  let startingAfter: string | undefined;
-
-  while (hasMore) {
-    const res = await stripe.prices.list({
-      expand: ["data.product"],
-      limit: 100,
-      starting_after: startingAfter,
-    });
-
-    const prices = res.data.filter((price) => price.active);
-    all = [...all, ...prices];
-
-    hasMore = res.has_more;
-
-    if (hasMore) {
-      startingAfter = prices[prices.length - 1].id;
-    }
-  }
-
-  const price = all.filter((stuff) => {
-    return stuff.id === pageId;
-  });
+  const product = pageId ? await getCatalogService().getActiveProductById(pageId) : null;
 
   return {
     props: {
-      price,
+      product: product ? JSON.parse(JSON.stringify(product)) : null,
     },
   };
 };
 
-const ProductPage: NextPage<CardProps & { price: Price[] }> = ({ price }) => {
-  if (!price || price.length === 0) {
-    return (
-      <>
-        <Head>
-          <title>Apple Store</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-        </Head>
-        <main>
-          <Header />
-          <p>Product not found</p>
-        </main>
-      </>
-    );
-  }
-
-  const product = price[0].product;
-
+const ProductPage: NextPage<{ product: Product | null }> = ({ product }) => {
   const { add, alert = null, isAlertVisible } = useContext(CartContext);
   const [hideAlert, setHideAlert] = useState(false);
 
@@ -113,9 +63,9 @@ const ProductPage: NextPage<CardProps & { price: Price[] }> = ({ price }) => {
     setHideAlert(false);
   };
 
-  const addToCart = (p: Stripe.Price) => {
-    if (add) {
-      add(p);
+  const addToCart = () => {
+    if (add && product) {
+      add(product);
     }
   };
 
@@ -125,6 +75,20 @@ const ProductPage: NextPage<CardProps & { price: Price[] }> = ({ price }) => {
     e.preventDefault();
     router.push("/");
   };
+
+  if (!product) {
+    return (
+      <>
+        <Head>
+          <title>Apple Store</title>
+        </Head>
+        <main>
+          <Header />
+          <p>Product not found</p>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -155,11 +119,11 @@ const ProductPage: NextPage<CardProps & { price: Price[] }> = ({ price }) => {
           <p className=" text-xl text-center italic px-4 mt-6">
             {getProductDescription(product)}
           </p>
-          <p className=" text-5xl text-center mt-8 tracking-wide text-gray-700">{`${getProductPrice(price[0])}$`}</p>
+          <p className=" text-5xl text-center mt-8 tracking-wide text-gray-700">{`${getProductPrice(product)}$`}</p>
 
           <div className="mt-4">
             <button
-              onClick={() => price.forEach((p) => addToCart(p))}
+              onClick={addToCart}
               className="relative mt-5 mb-5 w-[15rem] mx-auto flex bg-gray-300 border border-transparent rounded-md py-2 px-8 items-center justify-center text-sm font-medium text-gray-900 hover:bg-gray-400 hover:text-slate-100 lg:active:bg-gray-200 lg:active:text-gray-900 transition-all duration-200 ease-in-out"
             >
               Add to bag

@@ -5,12 +5,12 @@ import CartContext, {
 } from "../components/context/CartContext";
 import { useState, ReactElement } from "react";
 import _ from "lodash";
-import { Stripe } from "stripe";
 import { Alert, Slide } from "@mui/material";
 import { getProductPrice } from "../utils/computed";
+import { Product } from "../server/domain/types";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [items, setItems] = useState<Stripe.Price[]>([]);
+  const [items, setItems] = useState<Product[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [alert, setAlert] = useState<ReactElement | null>(null);
   const [alertVisible, setAlertVisible] = useState<boolean | undefined>(false);
@@ -35,7 +35,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     setTotal(0);
   };
 
-  const add = (product: Stripe.Price) => {
+  const add = (product: Product) => {
     const isProductInCart = items.some((item) => item.id === product.id);
     if (!isProductInCart) {
       let updatedItems = [...items, product];

@@ -1,12 +1,12 @@
 import { createContext, ReactElement } from "react";
-import Stripe from "stripe";
+import { Product } from "../../server/domain/types";
 
 export type CartContextProps = {
-  items?: Stripe.Price[];
+  items?: Product[];
   remove?: (productID: string) => void;
   removeAll?: () => void;
-  total?: number,
-  add?: (product: Stripe.Price) => void;
+  total?: number;
+  add?: (product: Product) => void;
   alert?: ReactElement<any, any> | null;
   isAlertVisible?: boolean | undefined;
 };
