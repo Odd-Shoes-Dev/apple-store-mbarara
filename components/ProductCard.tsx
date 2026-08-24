@@ -24,7 +24,7 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
   };
 
   return (
-    <div className="w-[80%] md:w-[300px] shadow-lg lg:hover:scale-105 transition-transform duration-300 ease-out">
+    <div className="w-[90%] md:w-[300px] shadow-lg lg:hover:scale-105 transition-transform duration-300 ease-out">
       <Link href={`/products/${product.id}`}>
         <div title="SEE THE PRODUCT" className="relative w-full cursor-pointer">
           {/* Image */}

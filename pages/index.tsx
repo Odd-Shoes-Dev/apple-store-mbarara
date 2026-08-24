@@ -122,7 +122,7 @@ const Home: NextPage<Props> = ({ products, navTree, selectedCategory }) => {
       </Head>
       <main className="bg-gray-100 min-h-screen">
         <Header navTree={navTree} />
-        <div className="max-w-5xl mx-auto py-8 px-4">
+        <div className="max-w-5xl mx-auto py-8 px-2 sm:px-4">
           {selectedCategory && (
             <h1 className="text-2xl font-semibold text-gray-900 px-6 sm:px-8 lg:px-0 mb-4">
               {selectedCategory.name}
@@ -142,7 +142,7 @@ const Home: NextPage<Props> = ({ products, navTree, selectedCategory }) => {
               No items currently available under {selectedCategory.name}.
             </p>
           )}
-          <div className="mt-8 grid justify-items-center grid-cols-1 gap-y-20 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-3 xl:gap-x-8">
+          <div className="mt-8 grid justify-items-center grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-y-20 sm:gap-x-6 lg:grid-cols-3 xl:gap-x-8">
             {!loading && sortedProducts().map((p) => (
               <ProductCard product={p} key={p.id} />
             ))}
