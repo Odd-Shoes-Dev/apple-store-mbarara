@@ -16,6 +16,7 @@ type ProductRow = {
   currency: string;
   category_id: string | null;
   active: boolean;
+  is_featured: boolean;
   created_at: Date;
   updated_at: Date;
   cat_id: string | null;
@@ -57,6 +58,7 @@ function mapProduct(row: ProductRow, images: ProductImageRow[]): Product {
         }
       : null,
     active: row.active,
+    isFeatured: row.is_featured,
     images: images
       .filter((image) => image.product_id === row.id)
       .sort((a, b) => a.position - b.position)
@@ -105,6 +107,11 @@ export class PgProductRepository implements ProductRepository {
       conditions.push(`p.name ILIKE $${params.length}`);
     }
 
+    if (filter.featured !== undefined) {
+      params.push(filter.featured);
+      conditions.push(`p.is_featured = $${params.length}`);
+    }
+
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
     const result = await this.db.query<ProductRow>(
@@ -143,8 +150,8 @@ export class PgProductRepository implements ProductRepository {
       await client.query("BEGIN");
 
       const productResult = await client.query<{ id: string }>(
-        `INSERT INTO products (name, slug, description, price_cents, currency, category_id, active)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO products (name, slug, description, price_cents, currency, category_id, active, is_featured)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING id`,
         [
           input.name,
@@ -154,6 +161,7 @@ export class PgProductRepository implements ProductRepository {
           input.currency,
           input.categoryId,
           input.active,
+          input.isFeatured,
         ]
       );
       const id = productResult.rows[0].id;
@@ -194,6 +202,7 @@ export class PgProductRepository implements ProductRepository {
         ["currency", "currency"],
         ["categoryId", "category_id"],
         ["active", "active"],
+        ["isFeatured", "is_featured"],
       ];
 
       for (const [key, column] of fieldMap) {

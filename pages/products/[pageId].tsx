@@ -83,7 +83,7 @@ const ProductPage: NextPage<Props> = ({ product, navTree }) => {
 
   const handleBack = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    router.push("/");
+    router.push("/store");
   };
 
   if (!product) {

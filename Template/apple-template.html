@@ -1,0 +1,793 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apple Store Mbarara</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000000;
+    --near-black:#0a0a0c;
+    --white:#ffffff;
+    --gray-1:#f5f5f7;
+    --gray-2:#e8e8ed;
+    --gray-3:#86868b;
+    --gray-4:#1d1d1f;
+    --blue:#0071e3;
+    --gold:#c9a15a;
+    --line: rgba(0,0,0,0.08);
+    --line-dark: rgba(255,255,255,0.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--white);
+    color:var(--gray-4);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{ font-weight:700; letter-spacing:-0.03em; }
+  .mono{ font-family:'JetBrains Mono',monospace; letter-spacing:0.02em; }
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;}
+  button{font-family:inherit;border:none;background:none;cursor:pointer;}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:100;
+    background:rgba(255,255,255,0.8);
+    backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 22px; height:52px;
+    max-width:1180px; margin:0 auto;
+  }
+  .logo{ display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.98rem;}
+  .navlinks{ display:flex; gap:32px; font-size:0.82rem; font-weight:500; color:#1d1d1f;}
+  .navlinks a{ opacity:0.85; transition:opacity .15s;}
+  .navlinks a:hover{ opacity:1;}
+  .navcta{ display:flex; align-items:center; gap:18px; }
+  .icon-link{ display:flex; align-items:center; opacity:0.85;}
+  .icon-link:hover{opacity:1;}
+  .pill{
+    padding:8px 16px; border-radius:100px; font-size:0.82rem; font-weight:600;
+    background:var(--black); color:var(--white); display:inline-flex; align-items:center; gap:6px;
+    transition:opacity .2s;
+  }
+  .pill:hover{ opacity:0.82; }
+  .pill.outline{ background:transparent; color:var(--black); border:1px solid var(--gray-3); }
+  .pill.outline:hover{ background:var(--gray-1); opacity:1;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    min-height:92vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    background: radial-gradient(120% 100% at 50% 0%, #1c1c1e 0%, #000 55%);
+    color:var(--white);
+    padding:90px 22px 60px;
+    overflow:hidden;
+  }
+  .hero .kicker{
+    font-size:0.95rem; font-weight:600; color:var(--gray-3); margin-bottom:8px;
+  }
+  .hero h1{
+    font-size:clamp(2.6rem,7vw,5.2rem);
+    line-height:1.02;
+    background:linear-gradient(180deg,#fff 0%, #d8d8dc 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero .sub{
+    font-size:clamp(1.05rem,2vw,1.4rem);
+    color:#c7c7cc; margin-top:14px; font-weight:500;
+  }
+  .hero-actions{ display:flex; gap:14px; margin-top:30px; }
+  .hero-actions .pill{ padding:11px 24px; font-size:0.92rem;}
+  .hero-actions .pill.blue{ background:var(--blue); color:#fff;}
+  .hero-actions .pill.blue:hover{ opacity:0.85;}
+  .hero-actions .pill.ghost{ background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.25);}
+  .hero-actions .pill.ghost:hover{ background:rgba(255,255,255,0.18);}
+
+  /* hero device render */
+  .hero-render{
+    position:relative;
+    width:min(720px, 90vw);
+    margin-top:56px;
+    aspect-ratio: 16/10;
+  }
+  .hr-glow{
+    position:absolute; inset:-20%;
+    background: radial-gradient(closest-side, rgba(201,161,90,0.28), transparent 70%);
+    filter: blur(40px);
+  }
+  .iphone-render{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) rotate(0deg);
+    width:220px; height:452px;
+    border-radius:52px;
+    background:
+      linear-gradient(135deg, #3a3a3d 0%, #161618 45%, #050506 100%);
+    box-shadow:
+      0 60px 100px -30px rgba(0,0,0,0.7),
+      inset 0 0 0 2px rgba(255,255,255,0.06);
+    z-index:3;
+  }
+  .iphone-render::before{
+    content:'';
+    position:absolute; inset:6px;
+    border-radius:46px;
+    background:
+      radial-gradient(120% 90% at 30% 10%, #2b2b2e, #050505 60%);
+  }
+  .iphone-render::after{
+    content:'';
+    position:absolute; top:16px; left:50%; transform:translateX(-50%);
+    width:82px; height:22px; border-radius:20px;
+    background:#000;
+  }
+  .mac-render{
+    position:absolute; left:50%; bottom:6%; transform:translateX(-50%);
+    width:78%; max-width:560px;
+    aspect-ratio: 16/10.2;
+    z-index:1;
+  }
+  .mac-screen{
+    width:100%; height:88%;
+    border-radius:14px 14px 0 0;
+    background: linear-gradient(160deg,#242427 0%, #0a0a0b 70%);
+    box-shadow: 0 40px 90px -30px rgba(0,0,0,0.65);
+    position:relative;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .mac-screen::after{
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(80% 60% at 30% 0%, rgba(201,161,90,0.16), transparent 60%);
+    border-radius:14px 14px 0 0;
+  }
+  .mac-base{
+    width:112%; height:14px; margin-left:-6%;
+    background:linear-gradient(180deg,#d7d7db,#a8a8ad);
+    border-radius:0 0 10px 10px;
+  }
+  .watch-render{
+    position:absolute; right:6%; top:14%;
+    width:96px; height:118px; z-index:4;
+    border-radius:34px;
+    background: linear-gradient(150deg,#2a2a2c,#0c0c0d);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,255,255,0.05);
+  }
+  .watch-render::before{
+    content:''; position:absolute; inset:8px; border-radius:26px;
+    background:radial-gradient(100% 80% at 30% 10%, #33291a, #000 65%);
+  }
+  .watch-crown{
+    position:absolute; right:-5px; top:32px; width:10px; height:16px;
+    background:linear-gradient(180deg,#b8b8bd,#87878d); border-radius:3px;
+  }
+
+  /* ---------- hillline signature ---------- */
+  .hillline{ width:100%; height:44px; display:block; background:#000;}
+  .hillline path{ fill:none; stroke:rgba(255,255,255,0.08); stroke-width:1.2;}
+  .hillline path.accent{ stroke:var(--gold); stroke-width:1.3; }
+
+  /* ---------- product showcase (full-bleed alternating) ---------- */
+  .showcase-item{
+    position:relative;
+    min-height:64vh;
+    display:flex; align-items:center;
+    overflow:hidden;
+  }
+  .showcase-item.dark{ background:#000; color:#fff;}
+  .showcase-item.light{ background:var(--gray-1); color:var(--gray-4);}
+  .sc-inner{
+    max-width:1180px; margin:0 auto; padding:60px 22px;
+    display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;
+    width:100%;
+  }
+  .showcase-item.reverse .sc-inner{ direction:rtl; }
+  .showcase-item.reverse .sc-inner > *{ direction:ltr; }
+  .sc-copy .eyebrow{ font-size:0.85rem; font-weight:600; color:var(--gold); margin-bottom:10px; display:block;}
+  .sc-copy h2{ font-size:clamp(2.1rem,4vw,3.3rem); line-height:1.05; }
+  .sc-copy p{ font-size:1.08rem; opacity:0.75; margin-top:16px; max-width:38ch; line-height:1.55;}
+  .sc-copy .price-row{ margin-top:22px; font-size:1.15rem; font-weight:600;}
+  .sc-copy .price-row .from{ font-size:0.85rem; opacity:0.6; font-weight:500; display:block; margin-bottom:2px;}
+  .sc-actions{ display:flex; gap:12px; margin-top:26px;}
+
+  .sc-visual{ position:relative; height:340px; display:flex; align-items:center; justify-content:center;}
+
+  /* iPhone product renders in showcase */
+  .render-phone{
+    width:200px; height:410px; border-radius:48px;
+    position:relative;
+    box-shadow:0 50px 90px -25px rgba(0,0,0,0.55);
+  }
+  .render-phone.titanium{ background:linear-gradient(140deg,#5a5650 0%,#2b2924 50%,#131210 100%);}
+  .render-phone.titanium::before{ content:'';position:absolute;inset:5px;border-radius:43px;background:radial-gradient(120% 90% at 25% 8%, #4a473f, #0c0b0a 65%);}
+  .render-phone::after{ content:''; position:absolute; top:15px; left:50%; transform:translateX(-50%); width:76px; height:20px; border-radius:18px; background:#000;}
+  .render-phone .cam{
+    position:absolute; top:22px; left:22px; width:64px; height:64px; border-radius:18px;
+    background:linear-gradient(140deg,#3a3833,#100f0d);
+    display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:8px;
+  }
+  .render-phone .cam span{ border-radius:50%; background:radial-gradient(circle at 35% 30%, #4d4a44, #060605 70%);}
+
+  /* MacBook render */
+  .render-mac{ width:88%; max-width:460px; }
+  .render-mac .lid{
+    aspect-ratio:16/10.4; border-radius:16px 16px 4px 4px;
+    background:linear-gradient(150deg,#e7e7ea,#c9c9cf);
+    box-shadow:0 50px 90px -25px rgba(0,0,0,0.35);
+    position:relative; padding:3%;
+  }
+  .render-mac .screen{
+    width:100%; height:100%; border-radius:8px;
+    background:linear-gradient(160deg,#1a1a1c,#000);
+    position:relative; overflow:hidden;
+  }
+  .render-mac .screen::after{
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(70% 60% at 25% 15%, rgba(0,113,227,0.25), transparent 60%);
+  }
+  .render-mac .base{
+    height:5%; width:106%; margin-left:-3%;
+    background:linear-gradient(180deg,#d8d8dc,#b4b4ba);
+    border-radius:0 0 8px 8px;
+  }
+
+  /* iPad render */
+  .render-ipad{
+    width:280px; height:380px; border-radius:26px;
+    background:linear-gradient(150deg,#e2e2e6,#c2c2c8);
+    box-shadow:0 50px 90px -25px rgba(0,0,0,0.3);
+    padding:14px;
+  }
+  .render-ipad .scr{
+    width:100%; height:100%; border-radius:14px;
+    background:linear-gradient(160deg,#161618,#000);
+    position:relative;
+  }
+  .render-ipad .scr::after{
+    content:''; position:absolute; inset:0; border-radius:14px;
+    background:radial-gradient(80% 60% at 70% 20%, rgba(201,161,90,0.2), transparent 60%);
+  }
+
+  /* Watch render */
+  .render-watch{
+    width:220px; height:270px; position:relative;
+  }
+  .render-watch .body{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:170px; height:210px; border-radius:56px;
+    background:linear-gradient(150deg,#4a4640,#1a1815 60%,#050504);
+    box-shadow:0 50px 90px -25px rgba(0,0,0,0.5);
+  }
+  .render-watch .body::before{
+    content:''; position:absolute; inset:14px; border-radius:42px;
+    background:radial-gradient(100% 80% at 30% 15%, #6b5230, #000 65%);
+  }
+  .render-watch .crown{
+    position:absolute; right:-8px; top:70px; width:14px; height:26px;
+    background:linear-gradient(180deg,#b8b8bd,#87878d); border-radius:4px;
+  }
+
+  /* AirPods render */
+  .render-airpods{
+    width:240px; height:240px; position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .render-airpods .case{
+    width:150px; height:110px; border-radius:22px 22px 40px 40px;
+    background:linear-gradient(150deg,#fdfdfd,#e2e2e6);
+    box-shadow:0 40px 80px -20px rgba(0,0,0,0.3), inset 0 -6px 12px rgba(0,0,0,0.06);
+    position:relative;
+  }
+  .render-airpods .case::after{
+    content:''; position:absolute; top:8px; left:50%; transform:translateX(-50%);
+    width:20px; height:6px; border-radius:4px; background:rgba(0,0,0,0.15);
+  }
+
+  /* ---------- store banner (Mbarara identity moment) ---------- */
+  .store-banner{
+    position:relative;
+    background:#000; color:#fff;
+    padding:120px 0;
+    text-align:center;
+    overflow:hidden;
+  }
+  .store-banner::before{
+    content:'';
+    position:absolute; inset:0;
+    background:
+      radial-gradient(60% 50% at 50% 100%, rgba(201,161,90,0.18), transparent 70%);
+  }
+  .store-banner .wrap{ position:relative; z-index:2;}
+  .store-banner .kicker{ color:var(--gold); font-weight:600; font-size:0.9rem; margin-bottom:14px;}
+  .store-banner h2{ font-size:clamp(2rem,4.5vw,3.4rem); max-width:16ch; margin:0 auto; line-height:1.08;}
+  .store-banner p{ color:#a1a1a6; font-size:1.1rem; margin-top:18px; max-width:48ch; margin-left:auto; margin-right:auto; line-height:1.6;}
+  .hills-svg{ margin-top:56px; width:100%; max-width:900px; margin-left:auto; margin-right:auto; opacity:0.9;}
+
+  /* ---------- trust grid ---------- */
+  .trust-section{ padding:90px 0; background:var(--gray-1);}
+  .trust-head{ text-align:center; margin-bottom:52px;}
+  .trust-head h2{ font-size:clamp(1.8rem,3vw,2.5rem);}
+  .trust-head p{ color:var(--gray-3); margin-top:10px; font-size:1.02rem;}
+  .trust-cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+  .tcard{
+    background:#fff; border-radius:20px; padding:32px 26px;
+    box-shadow: 0 1px 0 var(--line);
+    border:1px solid var(--line);
+  }
+  .tcard .ic{
+    width:44px;height:44px; border-radius:12px;
+    background:var(--gray-1); display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px; color:var(--gray-4);
+  }
+  .tcard h4{ font-size:1.05rem; font-weight:600;}
+  .tcard p{ font-size:0.88rem; color:var(--gray-3); margin-top:8px; line-height:1.5;}
+
+  /* ---------- lineup strip ---------- */
+  .lineup{ padding:90px 0; }
+  .lineup-head{ text-align:center; margin-bottom:52px;}
+  .lineup-head h2{ font-size:clamp(1.8rem,3vw,2.5rem);}
+  .lineup-head p{ color:var(--gray-3); margin-top:10px;}
+  .lineup-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .lcard{
+    border-radius:22px; padding:28px 24px 24px;
+    background:var(--gray-1);
+    transition:transform .25s ease, box-shadow .25s ease;
+    display:flex; flex-direction:column;
+  }
+  .lcard:hover{ transform:translateY(-3px); box-shadow:0 20px 40px -20px rgba(0,0,0,0.18);}
+  .lcard .lc-render{ height:150px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;}
+  .lcard .cat{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--gray-3); font-family:'JetBrains Mono',monospace;}
+  .lcard h4{ font-size:1.12rem; margin-top:6px; font-weight:600;}
+  .lcard .desc{ font-size:0.85rem; color:var(--gray-3); margin-top:6px; line-height:1.4;}
+  .lcard .foot{ display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:18px;}
+  .lcard .price{ font-weight:600; font-size:0.98rem;}
+  .lcard .price .cur{ font-size:0.68rem; color:var(--gray-3); font-family:'JetBrains Mono',monospace; margin-right:2px;}
+  .buy-btn{
+    width:34px;height:34px;border-radius:50%;
+    background:var(--black); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s;
+  }
+  .buy-btn:hover{ background:var(--blue); }
+
+  /* mini renders for lineup cards */
+  .mini-phone{ width:52px; height:104px; border-radius:16px; background:linear-gradient(140deg,#5a5650,#131210);}
+  .mini-mac{ width:110px; height:70px; border-radius:8px 8px 2px 2px; background:linear-gradient(150deg,#e7e7ea,#c9c9cf);}
+  .mini-ipad{ width:76px; height:100px; border-radius:12px; background:linear-gradient(150deg,#e2e2e6,#c2c2c8);}
+  .mini-watch{ width:60px; height:74px; border-radius:20px; background:linear-gradient(150deg,#4a4640,#050504);}
+
+  /* ---------- visit / map ---------- */
+  .visit{ padding:90px 0; background:var(--gray-1);}
+  .visit-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:0;
+    border-radius:26px; overflow:hidden;
+    background:#000;
+  }
+  .visit-info{ padding:60px 50px; color:#fff; display:flex; flex-direction:column; justify-content:center;}
+  .visit-info .eyebrow{ color:var(--gold); font-weight:600; font-size:0.85rem; margin-bottom:10px;}
+  .visit-info h3{ font-size:2rem;}
+  .visit-info p{ color:#a1a1a6; margin-top:14px; line-height:1.6;}
+  .visit-detail{ display:flex; gap:14px; margin-top:20px; align-items:flex-start;}
+  .visit-detail .ic{ width:20px; margin-top:2px; color:var(--gold); flex-shrink:0;}
+  .visit-detail span{ display:block; font-size:0.78rem; color:#8b8b90;}
+  .visit-detail strong{ font-weight:500; font-size:0.96rem;}
+  .visit-map{
+    position:relative;
+    background:
+      repeating-linear-gradient(0deg,#1c1c1e 0 1px,transparent 1px 44px),
+      repeating-linear-gradient(90deg,#1c1c1e 0 1px,transparent 1px 44px),
+      #0a0a0b;
+    min-height:380px;
+  }
+  .visit-map .pin{
+    position:absolute; left:54%; top:42%;
+    width:16px;height:16px; border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+    background:var(--gold); box-shadow:0 0 0 8px rgba(201,161,90,0.15);
+  }
+
+  /* ---------- footer ---------- */
+  footer{ background:#f5f5f7; padding:50px 0 24px; border-top:1px solid var(--line);}
+  .foot-top{
+    display:flex; justify-content:space-between; padding-bottom:28px;
+    border-bottom:1px solid var(--line); flex-wrap:wrap; gap:20px;
+  }
+  .foot-links{ display:flex; gap:44px; flex-wrap:wrap;}
+  .foot-col h5{ font-size:0.78rem; color:var(--gray-4); margin-bottom:14px; font-weight:600;}
+  .foot-col a{ display:block; font-size:0.82rem; color:var(--gray-3); margin-bottom:10px;}
+  .foot-col a:hover{ color:var(--gray-4);}
+  .foot-bottom{
+    padding-top:20px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-size:0.76rem; color:var(--gray-3);
+  }
+
+  /* ---------- fab ---------- */
+  .fab{
+    position:fixed; bottom:22px; right:22px; z-index:90;
+    width:54px;height:54px;border-radius:50%;
+    background:#25D366; color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 14px 30px -10px rgba(37,211,102,0.6);
+    transition:transform .2s;
+  }
+  .fab:hover{ transform:scale(1.06);}
+
+  @media (max-width:980px){
+    .navlinks{ display:none;}
+    .nav{ padding:0 16px;}
+    .logo{ font-size:0.85rem; gap:6px;}
+    .pill{ padding:8px 13px; font-size:0.76rem;}
+    .sc-inner{ grid-template-columns:1fr; text-align:center;}
+    .showcase-item.reverse .sc-inner{ direction:ltr;}
+    .sc-copy p{ margin-left:auto; margin-right:auto;}
+    .sc-actions{ justify-content:center;}
+    .trust-cards{ grid-template-columns:repeat(2,1fr);}
+    .lineup-grid{ grid-template-columns:repeat(2,1fr);}
+    .visit-grid{ grid-template-columns:1fr;}
+    .foot-links{ gap:28px;}
+  }
+  @media (max-width:560px){
+    .wrap{ padding:0 16px;}
+    .trust-cards{ grid-template-columns:1fr;}
+    .lineup-grid{ grid-template-columns:1fr 1fr; gap:10px;}
+    .showcase-item{ min-height:auto; padding:70px 0;}
+    .sc-inner{ padding:0 22px;}
+    .sc-visual{ height:300px;}
+    .visit-info{ padding:40px 26px;}
+    .fab{ width:48px; height:48px; bottom:18px; right:18px;}
+    .hero{ padding-top:70px; padding-bottom:40px;}
+    .hero-render{ margin-top:36px; aspect-ratio:16/13;}
+    .iphone-render{ width:150px; height:308px; border-radius:36px;}
+    .iphone-render::after{ width:56px; height:14px; top:11px;}
+    .mac-render{ width:82%; bottom:2%;}
+    .watch-render{ width:66px; height:82px; right:2%; top:10%;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <a href="#" class="logo">
+      <svg width="16" height="16" viewBox="0 0 17 20" fill="currentColor"><path d="M13.5 6.6c-.1-1.5.6-2.7 1.9-3.5-.8-1.2-2-1.8-3.6-1.9-1.5-.1-3.1.9-3.7.9-.6 0-2-.9-3.3-.9C2.4 1.3.4 3.3.4 6.7c0 1.1.2 2.3.6 3.4.5 1.5 2.4 5.2 4.4 5.1 1 0 1.7-.7 3-.7 1.3 0 1.9.7 3 .7 2 0 3.7-3.4 4.2-4.9-2.7-1.3-2.4-3.7-2.1-3.7zM11.1 1.8c.9-1.1 1.6-2.6 1.4-4.1-1.3.1-2.9.9-3.8 2-.8 1-1.5 2.5-1.3 3.9 1.4.1 2.8-.7 3.7-1.8z" transform="translate(0,3)"/></svg>
+      Apple Store Mbarara
+    </a>
+    <nav class="navlinks">
+      <a href="#store">Store</a>
+      <a href="#iphone">iPhone</a>
+      <a href="#mac">Mac</a>
+      <a href="#watch">Watch</a>
+      <a href="#visit">Visit</a>
+    </nav>
+    <div class="navcta">
+      <a href="tel:+256780526527" class="icon-link" aria-label="Call">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 5a2 2 0 012-2h3l2 5-2 1a11 11 0 006 6l1-2 5 2v3a2 2 0 01-2 2A16 16 0 013 5z"/></svg>
+      </a>
+      <a href="https://wa.me/256780526527" class="pill">Chat on WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="kicker">Apple Store Mbarara</div>
+  <h1>iPhone 17 Pro.<br>Now in Mbarara.</h1>
+  <p class="sub">Titanium design. Genuine, authorized, and 5 minutes from the taxi park.</p>
+  <div class="hero-actions">
+    <a href="#lineup" class="pill blue">Shop iPhone 17 Pro</a>
+    <a href="https://wa.me/256780526527" class="pill ghost">Ask a Specialist</a>
+  </div>
+  <div class="hero-render">
+    <div class="hr-glow"></div>
+    <div class="watch-render">
+      <div class="watch-crown"></div>
+    </div>
+    <div class="iphone-render"></div>
+    <div class="mac-render">
+      <div class="mac-screen"></div>
+      <div class="mac-base"></div>
+    </div>
+  </div>
+</section>
+
+<svg class="hillline" viewBox="0 0 1200 44" preserveAspectRatio="none">
+  <path d="M0 30 Q 100 8, 200 26 T 400 22 T 600 34 T 800 14 T 1000 30 T 1200 18" />
+  <path class="accent" d="M0 30 Q 100 8, 200 26 T 400 22 T 600 34 T 800 14 T 1000 30 T 1200 18" />
+</svg>
+
+<!-- SHOWCASE: iPhone -->
+<div id="iphone" class="showcase-item dark">
+  <div class="sc-inner">
+    <div class="sc-copy">
+      <span class="eyebrow">iPhone 17 Pro</span>
+      <h2>Forged in titanium.</h2>
+      <p>The strongest, lightest Pro design yet, with the fastest chip ever in an iPhone. Available in-store this week.</p>
+      <div class="price-row">
+        <span class="from">From</span>
+        UGX 4,950,000
+      </div>
+      <div class="sc-actions">
+        <a href="https://wa.me/256780526527" class="pill blue">Check stock</a>
+        <a href="#" class="pill ghost">Learn more</a>
+      </div>
+    </div>
+    <div class="sc-visual">
+      <div class="render-phone titanium">
+        <div class="cam"><span></span><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOWCASE: Mac -->
+<div id="mac" class="showcase-item light reverse">
+  <div class="sc-inner">
+    <div class="sc-copy">
+      <span class="eyebrow">MacBook Air M3</span>
+      <h2>Superlight.<br>Supercapable.</h2>
+      <p>Up to 18 hours of battery. Silent, fanless design. The everyday Mac for students and professionals in Mbarara.</p>
+      <div class="price-row">
+        <span class="from">From</span>
+        UGX 6,200,000
+      </div>
+      <div class="sc-actions">
+        <a href="https://wa.me/256780526527" class="pill">Check stock</a>
+        <a href="#" class="pill outline">Learn more</a>
+      </div>
+    </div>
+    <div class="sc-visual">
+      <div class="render-mac">
+        <div class="lid"><div class="screen"></div></div>
+        <div class="base"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOWCASE: iPad -->
+<div class="showcase-item dark">
+  <div class="sc-inner">
+    <div class="sc-copy">
+      <span class="eyebrow">iPad Air</span>
+      <h2>Serious speed.<br>Seriously portable.</h2>
+      <p>The M2 chip in a thin, light design. Perfect for note-taking, design work, and everything in between.</p>
+      <div class="price-row">
+        <span class="from">From</span>
+        UGX 2,650,000
+      </div>
+      <div class="sc-actions">
+        <a href="https://wa.me/256780526527" class="pill blue">Check stock</a>
+        <a href="#" class="pill ghost">Learn more</a>
+      </div>
+    </div>
+    <div class="sc-visual">
+      <div class="render-ipad"><div class="scr"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOWCASE: Watch -->
+<div id="watch" class="showcase-item light reverse">
+  <div class="sc-inner">
+    <div class="sc-copy">
+      <span class="eyebrow">Apple Watch Series 10</span>
+      <h2>Thinner.<br>Mightier.</h2>
+      <p>A thinner design, a larger display, and the fastest charging yet. Track your day, in and around Mbarara.</p>
+      <div class="price-row">
+        <span class="from">From</span>
+        UGX 1,780,000
+      </div>
+      <div class="sc-actions">
+        <a href="https://wa.me/256780526527" class="pill">Check stock</a>
+        <a href="#" class="pill outline">Learn more</a>
+      </div>
+    </div>
+    <div class="sc-visual">
+      <div class="render-watch">
+        <div class="body"></div>
+        <div class="crown"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOWCASE: AirPods -->
+<div class="showcase-item dark">
+  <div class="sc-inner">
+    <div class="sc-copy">
+      <span class="eyebrow">AirPods Pro 2</span>
+      <h2>Hear it all.<br>Or don't.</h2>
+      <p>Active Noise Cancellation, adaptive audio, and up to 6 hours of listening time on a single charge.</p>
+      <div class="price-row">
+        <span class="from">From</span>
+        UGX 980,000
+      </div>
+      <div class="sc-actions">
+        <a href="https://wa.me/256780526527" class="pill blue">Check stock</a>
+        <a href="#" class="pill ghost">Learn more</a>
+      </div>
+    </div>
+    <div class="sc-visual">
+      <div class="render-airpods"><div class="case"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- STORE BANNER — Mbarara identity moment -->
+<section id="store" class="store-banner">
+  <div class="wrap">
+    <div class="kicker">Apple Store Mbarara</div>
+    <h2>The only authorized Apple Store between Kampala and the Rwandan border.</h2>
+    <p>Genuine products, certified technicians, and after-sales support — without the trip to the capital.</p>
+    <svg class="hills-svg" viewBox="0 0 900 120" fill="none">
+      <path d="M0 90 Q 80 30, 160 70 T 320 55 T 480 85 T 640 40 T 800 75 T 900 55" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+      <path d="M0 105 Q 90 60, 190 95 T 360 80 T 540 100 T 720 65 T 900 90" stroke="#c9a15a" stroke-width="1.5" opacity="0.7"/>
+    </svg>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust-section">
+  <div class="wrap">
+    <div class="trust-head">
+      <h2>Why buy from us</h2>
+      <p>Everything a Kampala Apple Store offers — now local.</p>
+    </div>
+    <div class="trust-cards">
+      <div class="tcard">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg></div>
+        <h4>Authorized reseller</h4>
+        <p>Every device sourced through official Apple channels, never grey-market.</p>
+      </div>
+      <div class="tcard">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 8v13H3V8M1 3h22l-3 5H4L1 3z"/></svg></div>
+        <h4>Free local delivery</h4>
+        <p>Same-day within Mbarara town, next-day across the region.</p>
+      </div>
+      <div class="tcard">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h4>24-hour repairs</h4>
+        <p>Certified technicians for screens, batteries, and logic boards.</p>
+      </div>
+      <div class="tcard">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg></div>
+        <h4>Trade-in program</h4>
+        <p>Get credit toward a new device when you trade in your old one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LINEUP -->
+<section id="lineup" class="lineup">
+  <div class="wrap">
+    <div class="lineup-head">
+      <h2>Shop the full lineup</h2>
+      <p>In stock this week at our Mbarara store.</p>
+    </div>
+    <div class="lineup-grid">
+
+      <div class="lcard">
+        <div class="lc-render"><div class="mini-phone" style="margin:0 auto;"></div></div>
+        <span class="cat">iPhone</span>
+        <h4>iPhone 17 Pro</h4>
+        <p class="desc">Titanium, A19 Pro chip</p>
+        <div class="foot">
+          <span class="price"><span class="cur">UGX</span>4,950,000</span>
+          <a href="https://wa.me/256780526527" class="buy-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </div>
+
+      <div class="lcard">
+        <div class="lc-render"><div class="mini-mac" style="margin:auto;"></div></div>
+        <span class="cat">Mac</span>
+        <h4>MacBook Air M3</h4>
+        <p class="desc">13" · 18hr battery</p>
+        <div class="foot">
+          <span class="price"><span class="cur">UGX</span>6,200,000</span>
+          <a href="https://wa.me/256780526527" class="buy-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </div>
+
+      <div class="lcard">
+        <div class="lc-render"><div class="mini-ipad" style="margin:auto;"></div></div>
+        <span class="cat">iPad</span>
+        <h4>iPad Air 11"</h4>
+        <p class="desc">M2 chip, Wi-Fi</p>
+        <div class="foot">
+          <span class="price"><span class="cur">UGX</span>2,650,000</span>
+          <a href="https://wa.me/256780526527" class="buy-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </div>
+
+      <div class="lcard">
+        <div class="lc-render"><div class="mini-watch" style="margin:auto;"></div></div>
+        <span class="cat">Watch</span>
+        <h4>Watch Series 10</h4>
+        <p class="desc">46mm, GPS</p>
+        <div class="foot">
+          <span class="price"><span class="cur">UGX</span>1,780,000</span>
+          <a href="https://wa.me/256780526527" class="buy-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VISIT -->
+<section id="visit" class="visit">
+  <div class="wrap">
+    <div class="visit-grid">
+      <div class="visit-info">
+        <span class="eyebrow">Find us</span>
+        <h3>Apple Store Mbarara</h3>
+        <p>On High Street in the town centre — easy parking, five minutes from the main taxi park.</p>
+        <div class="visit-detail">
+          <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2C7 2 3 6 3 11c0 6 9 11 9 11s9-5 9-11c0-5-4-9-9-9z"/><circle cx="12" cy="11" r="3"/></svg></span>
+          <div><span>Address</span><strong>High Street, Mbarara, Uganda</strong></div>
+        </div>
+        <div class="visit-detail">
+          <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5a2 2 0 012-2h3l2 5-2 1a11 11 0 006 6l1-2 5 2v3a2 2 0 01-2 2A16 16 0 013 5z"/></svg></span>
+          <div><span>Phone / WhatsApp</span><strong>+256 780 526 527</strong></div>
+        </div>
+        <div class="visit-detail">
+          <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+          <div><span>Hours</span><strong>Mon – Sat, 9:00 – 19:00</strong></div>
+        </div>
+      </div>
+      <div class="visit-map"><div class="pin"></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="logo" style="font-weight:600;">Apple Store Mbarara</div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h5>Shop</h5>
+          <a href="#iphone">iPhone</a>
+          <a href="#mac">Mac</a>
+          <a href="#">iPad</a>
+          <a href="#watch">Watch</a>
+        </div>
+        <div class="foot-col">
+          <h5>Support</h5>
+          <a href="#">Repairs</a>
+          <a href="#">Warranty</a>
+          <a href="#">Trade-in</a>
+        </div>
+        <div class="foot-col">
+          <h5>Store</h5>
+          <a href="#visit">High Street, Mbarara</a>
+          <a href="tel:+256780526527">+256 780 526 527</a>
+          <a href="https://wa.me/256780526527">WhatsApp</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Apple Store Mbarara. Independent authorized reseller.</span>
+      <span>Not affiliated with Apple Inc.</span>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/256780526527" class="fab" aria-label="Chat on WhatsApp">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.35 5.07L2 22l5.06-1.33A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.1c-.22.62-1.28 1.18-1.77 1.24-.45.06-1.02.09-1.65-.1-.38-.12-.87-.28-1.5-.55-2.63-1.14-4.35-3.8-4.48-3.98-.13-.18-1.07-1.42-1.07-2.71 0-1.29.68-1.92.92-2.18.24-.26.53-.32.7-.32.18 0 .35 0 .5.01.16.01.38-.06.6.46.22.53.75 1.83.82 1.96.07.13.11.29.02.47-.09.18-.14.29-.27.45-.13.15-.28.34-.4.46-.13.13-.27.27-.12.53.15.26.68 1.12 1.46 1.82 1 .9 1.85 1.18 2.11 1.31.26.13.41.11.57-.06.16-.18.65-.76.82-1.02.17-.26.35-.22.58-.13.24.09 1.5.71 1.76.84.26.13.43.19.5.3.07.11.07.62-.15 1.24z"/></svg>
+</a>
+
+</body>
+</html>

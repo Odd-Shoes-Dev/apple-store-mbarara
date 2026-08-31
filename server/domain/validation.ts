@@ -14,6 +14,7 @@ export const newProductSchema = z.object({
   currency: z.string().min(1).default("usd"),
   categoryId: z.string().min(1),
   active: z.boolean().default(true),
+  isFeatured: z.boolean().default(false),
   images: z.array(productImageSchema).default([]),
 });
 

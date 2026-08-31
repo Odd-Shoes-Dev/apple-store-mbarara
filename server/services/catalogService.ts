@@ -12,6 +12,10 @@ export function createCatalogService(productRepository: ProductRepository) {
       return productRepository.list({ active: true, categoryIds });
     },
 
+    listFeaturedProducts(): Promise<Product[]> {
+      return productRepository.list({ active: true, featured: true });
+    },
+
     listAllProducts(filter: ProductListFilter): Promise<Product[]> {
       return productRepository.list(filter);
     },

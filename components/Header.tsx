@@ -84,7 +84,7 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
 
   return (
     <header
-      className={`sticky top-0 z-40 bg-white transition-transform duration-300 ease-in-out ${
+      className={`sticky top-0 z-40 bg-white/80 backdrop-blur-xl backdrop-saturate-[180%] border-b border-black/[0.08] transition-transform duration-300 ease-in-out ${
         hidden ? "-translate-y-full" : "translate-y-0"
       }`}
     >
@@ -104,7 +104,7 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
                 department.children.length === 0 ? (
                   <Link
                     key={department.id}
-                    href={{ pathname: "/", query: { category: department.slug } }}
+                    href={{ pathname: "/store", query: { category: department.slug } }}
                     className="text-sm font-medium text-gray-700 hover:text-gray-900"
                   >
                     {department.name}
@@ -127,14 +127,14 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
                         >
                           <Popover.Panel className="absolute left-0 top-full mt-2 w-56 bg-white shadow-lg rounded-md ring-1 ring-black ring-opacity-5 py-2 z-50">
                             <div className="flex flex-col">
-                              <Link href={{ pathname: "/", query: { category: department.slug } }} passHref>
+                              <Link href={{ pathname: "/store", query: { category: department.slug } }} passHref>
                                 <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50">
                                   {`All ${department.name}`}
                                 </a>
                               </Link>
                               <div className="border-t my-1" />
                               {department.children.map((model) => (
-                                <Link key={model.id} href={{ pathname: "/", query: { category: model.slug } }} passHref>
+                                <Link key={model.id} href={{ pathname: "/store", query: { category: model.slug } }} passHref>
                                   <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                     {model.name}
                                   </a>
@@ -254,7 +254,7 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
               const col = index % 3;
               const panelAlign = col === 2 ? "right-0" : "left-0";
               return department.children.length === 0 ? (
-                <Link key={department.id} href={{ pathname: "/", query: { category: department.slug } }} passHref>
+                <Link key={department.id} href={{ pathname: "/store", query: { category: department.slug } }} passHref>
                   <a className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center">
                     {department.name}
                   </a>
@@ -277,14 +277,14 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
                       >
                         <Popover.Panel className={`absolute ${panelAlign} top-full mt-1 w-44 bg-white shadow-lg rounded-md ring-1 ring-black ring-opacity-5 py-2 z-50`}>
                           <div className="flex flex-col">
-                            <Link href={{ pathname: "/", query: { category: department.slug } }} passHref>
+                            <Link href={{ pathname: "/store", query: { category: department.slug } }} passHref>
                               <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50">
                                 {`All ${department.name}`}
                               </a>
                             </Link>
                             <div className="border-t my-1" />
                             {department.children.map((model) => (
-                              <Link key={model.id} href={{ pathname: "/", query: { category: model.slug } }} passHref>
+                              <Link key={model.id} href={{ pathname: "/store", query: { category: model.slug } }} passHref>
                                 <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                   {model.name}
                                 </a>

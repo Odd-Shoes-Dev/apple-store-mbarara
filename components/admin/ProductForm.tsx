@@ -20,6 +20,7 @@ const ProductForm = ({ initial }: Props) => {
   const [categoryId, setCategoryId] = useState<string>(initial?.category?.id ?? "");
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [active, setActive] = useState(initial?.active ?? true);
+  const [isFeatured, setIsFeatured] = useState(initial?.isFeatured ?? false);
   const [images, setImages] = useState<ImageDraft[]>(
     initial?.images.map((image) => ({ url: image.url, key: image.key })) ?? []
   );
@@ -93,6 +94,7 @@ const ProductForm = ({ initial }: Props) => {
       currency: "usd",
       categoryId,
       active,
+      isFeatured,
       images: images.map((image, index) => ({ ...image, position: index })),
     };
 
@@ -175,10 +177,16 @@ const ProductForm = ({ initial }: Props) => {
         </div>
       </div>
 
-      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-        <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
-        Active (visible on storefront)
-      </label>
+      <div className="flex flex-col gap-2">
+        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+          Active (visible on storefront)
+        </label>
+        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} />
+          Feature on homepage
+        </label>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Images</label>

@@ -4,7 +4,14 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        gold: "#c9a15a",
+      },
+      fontFamily: {
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+      },
+    },
   },
   plugins: [],
 };

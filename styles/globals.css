@@ -13,4 +13,6 @@
 
 body {
   overflow-y: scroll;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }

@@ -32,6 +32,7 @@ export type Product = {
   currency: string;
   category: Category | null;
   active: boolean;
+  isFeatured: boolean;
   images: ProductImage[];
   createdAt: Date;
   updatedAt: Date;
@@ -45,6 +46,7 @@ export type NewProductInput = {
   currency: string;
   categoryId: string;
   active: boolean;
+  isFeatured: boolean;
   images: { url: string; key: string; position: number }[];
 };
 
@@ -54,6 +56,7 @@ export type ProductListFilter = {
   search?: string;
   categoryIds?: string[];
   active?: boolean;
+  featured?: boolean;
 };
 
 export type AdminUser = {
