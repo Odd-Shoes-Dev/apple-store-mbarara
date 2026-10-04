@@ -3,6 +3,7 @@ import { ProductRepository } from "../../../ports/ProductRepository";
 import {
   NewProductInput,
   Product,
+  ProductCondition,
   ProductListFilter,
   UpdateProductInput,
 } from "../../../domain/types";
@@ -17,6 +18,12 @@ type ProductRow = {
   category_id: string | null;
   active: boolean;
   is_featured: boolean;
+  is_new_arrival: boolean;
+  original_price_cents: number | null;
+  condition: ProductCondition;
+  stock_count: number;
+  warranty_months: number | null;
+  is_authentic: boolean;
   created_at: Date;
   updated_at: Date;
   cat_id: string | null;
@@ -59,6 +66,12 @@ function mapProduct(row: ProductRow, images: ProductImageRow[]): Product {
       : null,
     active: row.active,
     isFeatured: row.is_featured,
+    isNewArrival: row.is_new_arrival,
+    originalPriceCents: row.original_price_cents,
+    condition: row.condition,
+    stockCount: row.stock_count,
+    warrantyMonths: row.warranty_months,
+    isAuthentic: row.is_authentic,
     images: images
       .filter((image) => image.product_id === row.id)
       .sort((a, b) => a.position - b.position)
@@ -150,8 +163,8 @@ export class PgProductRepository implements ProductRepository {
       await client.query("BEGIN");
 
       const productResult = await client.query<{ id: string }>(
-        `INSERT INTO products (name, slug, description, price_cents, currency, category_id, active, is_featured)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `INSERT INTO products (name, slug, description, price_cents, currency, category_id, active, is_featured, is_new_arrival, original_price_cents, condition, stock_count, warranty_months, is_authentic)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
          RETURNING id`,
         [
           input.name,
@@ -162,6 +175,12 @@ export class PgProductRepository implements ProductRepository {
           input.categoryId,
           input.active,
           input.isFeatured,
+          input.isNewArrival ?? false,
+          input.originalPriceCents ?? null,
+          input.condition ?? "brand_new",
+          input.stockCount ?? 0,
+          input.warrantyMonths ?? null,
+          input.isAuthentic ?? true,
         ]
       );
       const id = productResult.rows[0].id;
@@ -203,6 +222,12 @@ export class PgProductRepository implements ProductRepository {
         ["categoryId", "category_id"],
         ["active", "active"],
         ["isFeatured", "is_featured"],
+        ["isNewArrival", "is_new_arrival"],
+        ["originalPriceCents", "original_price_cents"],
+        ["condition", "condition"],
+        ["stockCount", "stock_count"],
+        ["warrantyMonths", "warranty_months"],
+        ["isAuthentic", "is_authentic"],
       ];
 
       for (const [key, column] of fieldMap) {

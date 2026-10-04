@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Category, Product } from "../../server/domain/types";
+import { Category, CONDITION_LABELS, Product, ProductCondition, ProductSpec } from "../../server/domain/types";
 
 type ImageDraft = { url: string; key: string };
 
@@ -10,6 +10,8 @@ type Props = {
 
 type CategoryRow = Category & { parentName: string | null };
 
+const CONDITIONS: ProductCondition[] = ["brand_new", "used_uk", "used_local", "refurbished"];
+
 const ProductForm = ({ initial }: Props) => {
   const router = useRouter();
   const isEdit = Boolean(initial);
@@ -17,13 +19,24 @@ const ProductForm = ({ initial }: Props) => {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial ? (initial.priceCents / 100).toString() : "");
+  const [originalPrice, setOriginalPrice] = useState(
+    initial?.originalPriceCents ? (initial.originalPriceCents / 100).toString() : ""
+  );
   const [categoryId, setCategoryId] = useState<string>(initial?.category?.id ?? "");
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [active, setActive] = useState(initial?.active ?? true);
   const [isFeatured, setIsFeatured] = useState(initial?.isFeatured ?? false);
+  const [isNewArrival, setIsNewArrival] = useState(initial?.isNewArrival ?? false);
+  const [condition, setCondition] = useState<ProductCondition>(initial?.condition ?? "brand_new");
+  const [stockCount, setStockCount] = useState(initial?.stockCount?.toString() ?? "0");
+  const [warrantyMonths, setWarrantyMonths] = useState(
+    initial?.warrantyMonths?.toString() ?? ""
+  );
+  const [isAuthentic, setIsAuthentic] = useState(initial?.isAuthentic ?? true);
   const [images, setImages] = useState<ImageDraft[]>(
     initial?.images.map((image) => ({ url: image.url, key: image.key })) ?? []
   );
+  const [specs, setSpecs] = useState<{ label: string; value: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +51,11 @@ const ProductForm = ({ initial }: Props) => {
           setCategoryId((all.find((c) => !c.parentId) ?? all[0]).id);
         }
       });
+    if (isEdit && initial?.id) {
+      fetch(`/api/admin/specs/${initial.id}`)
+        .then((r) => r.json())
+        .then((d) => setSpecs((d.specs as ProductSpec[] ?? []).map((s) => ({ label: s.label, value: s.value }))));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -85,16 +103,42 @@ const ProductForm = ({ initial }: Props) => {
       return;
     }
 
+    const originalPriceCents = originalPrice
+      ? Math.round(parseFloat(originalPrice) * 100)
+      : null;
+    if (originalPrice && (Number.isNaN(originalPriceCents) || (originalPriceCents ?? 0) <= 0)) {
+      setError("Enter a valid original price or leave it blank");
+      return;
+    }
+
+    const stock = parseInt(stockCount, 10);
+    if (Number.isNaN(stock) || stock < 0) {
+      setError("Stock count must be 0 or more");
+      return;
+    }
+
+    const warranty = warrantyMonths ? parseInt(warrantyMonths, 10) : null;
+    if (warrantyMonths && (Number.isNaN(warranty) || (warranty ?? 0) <= 0)) {
+      setError("Warranty months must be a positive number or leave it blank");
+      return;
+    }
+
     setSaving(true);
 
     const body = {
       name,
       description,
       priceCents,
+      originalPriceCents,
       currency: "usd",
       categoryId,
       active,
       isFeatured,
+      isNewArrival,
+      condition,
+      stockCount: stock,
+      warrantyMonths: warranty,
+      isAuthentic,
       images: images.map((image, index) => ({ ...image, position: index })),
     };
 
@@ -109,6 +153,17 @@ const ProductForm = ({ initial }: Props) => {
     if (!res.ok) {
       setError("Failed to save product");
       return;
+    }
+
+    const saved = await res.json();
+    const productId = saved.product?.id ?? initial?.id;
+
+    if (productId && specs.length > 0) {
+      await fetch(`/api/admin/specs/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(specs.filter((s) => s.label && s.value).map((s, i) => ({ ...s, position: i }))),
+      });
     }
 
     router.push("/admin/products");
@@ -153,6 +208,21 @@ const ProductForm = ({ initial }: Props) => {
           />
         </div>
         <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700">Original Price (before discount)</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Leave blank if no discount"
+            value={originalPrice}
+            onChange={(e) => setOriginalPrice(e.target.value)}
+            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2"
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700">Category</label>
           <select
             required
@@ -175,6 +245,44 @@ const ProductForm = ({ initial }: Props) => {
             })}
           </select>
         </div>
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700">Condition</label>
+          <select
+            value={condition}
+            onChange={(e) => setCondition(e.target.value as ProductCondition)}
+            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2"
+          >
+            {CONDITIONS.map((c) => (
+              <option key={c} value={c}>{CONDITION_LABELS[c]}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700">Stock Count</label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={stockCount}
+            onChange={(e) => setStockCount(e.target.value)}
+            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2"
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700">Warranty (months)</label>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            placeholder="Leave blank if none"
+            value={warrantyMonths}
+            onChange={(e) => setWarrantyMonths(e.target.value)}
+            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -185,6 +293,14 @@ const ProductForm = ({ initial }: Props) => {
         <label className="inline-flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} />
           Feature on homepage
+        </label>
+        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" checked={isNewArrival} onChange={(e) => setIsNewArrival(e.target.checked)} />
+          New Arrival
+        </label>
+        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" checked={isAuthentic} onChange={(e) => setIsAuthentic(e.target.checked)} />
+          Authentic / Genuine product
         </label>
       </div>
 
@@ -213,6 +329,29 @@ const ProductForm = ({ initial }: Props) => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Specifications */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Specifications</label>
+        {specs.map((spec, i) => (
+          <div key={i} className="flex gap-2 mb-2">
+            <input
+              placeholder="Label (e.g. Storage)"
+              value={spec.label}
+              onChange={(e) => setSpecs((prev) => prev.map((s, j) => j === i ? { ...s, label: e.target.value } : s))}
+              className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+            />
+            <input
+              placeholder="Value (e.g. 256 GB)"
+              value={spec.value}
+              onChange={(e) => setSpecs((prev) => prev.map((s, j) => j === i ? { ...s, value: e.target.value } : s))}
+              className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+            />
+            <button type="button" onClick={() => setSpecs((prev) => prev.filter((_, j) => j !== i))} className="text-rose-500 hover:text-rose-700 text-lg leading-none px-1">×</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => setSpecs((prev) => [...prev, { label: "", value: "" }])} className="text-sm text-blue-600 hover:underline mt-1">+ Add spec</button>
       </div>
 
       <button

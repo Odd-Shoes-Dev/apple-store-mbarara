@@ -1,7 +1,10 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import Script from "next/script";
+import { useState, FormEvent } from "react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
 import { getCatalogService, getCategoryService } from "../server/config/services";
 import { CategoryWithChildren, Product } from "../server/domain/types";
@@ -43,81 +46,23 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
   };
 };
 
-/* ─── CSS device renders ─────────────────────────────────────────── */
-
-function IPhoneRender() {
-  return (
-    <div
-      style={{
-        position: "absolute", left: "50%", top: "50%",
-        transform: "translate(-50%, -50%)", zIndex: 3,
-        width: 200, height: 410,
-        borderRadius: 48,
-        background: "linear-gradient(135deg, #3a3a3d 0%, #161618 45%, #050506 100%)",
-        boxShadow: "0 60px 100px -30px rgba(0,0,0,0.7), inset 0 0 0 2px rgba(255,255,255,0.06)",
-      }}
-    >
-      <div style={{
-        position: "absolute", inset: 5, borderRadius: 43,
-        background: "radial-gradient(120% 90% at 30% 10%, #2b2b2e, #050505 60%)",
-      }} />
-      <div style={{
-        position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)",
-        width: 76, height: 20, borderRadius: 18, background: "#000",
-      }} />
-    </div>
-  );
-}
-
-function MacRender() {
-  return (
-    <div style={{
-      position: "absolute", left: "50%", bottom: "4%",
-      transform: "translateX(-50%)", zIndex: 1,
-      width: "76%", maxWidth: 520,
-    }}>
-      <div style={{
-        width: "100%", paddingBottom: "62%", position: "relative",
-        borderRadius: "14px 14px 0 0",
-        background: "linear-gradient(160deg, #242427 0%, #0a0a0b 70%)",
-        boxShadow: "0 40px 90px -30px rgba(0,0,0,0.65)",
-        border: "1px solid rgba(255,255,255,0.08)",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0, borderRadius: "14px 14px 0 0",
-          background: "radial-gradient(80% 60% at 30% 0%, rgba(201,161,90,0.16), transparent 60%)",
-        }} />
-      </div>
-      <div style={{
-        width: "112%", height: 13, marginLeft: "-6%",
-        background: "linear-gradient(180deg, #d7d7db, #a8a8ad)",
-        borderRadius: "0 0 10px 10px",
-      }} />
-    </div>
-  );
-}
-
-function WatchRender() {
-  return (
-    <div style={{
-      position: "absolute", right: "6%", top: "12%", zIndex: 4,
-      width: 84, height: 104,
-      borderRadius: 30,
-      background: "linear-gradient(150deg, #2a2a2c, #0c0c0d)",
-      boxShadow: "0 30px 60px -20px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,255,255,0.05)",
-    }}>
-      <div style={{
-        position: "absolute", inset: 7, borderRadius: 23,
-        background: "radial-gradient(100% 80% at 30% 10%, #33291a, #000 65%)",
-      }} />
-      <div style={{
-        position: "absolute", right: -4, top: 28,
-        width: 8, height: 14,
-        background: "linear-gradient(180deg, #b8b8bd, #87878d)",
-        borderRadius: 3,
-      }} />
-    </div>
-  );
+/* ─── TypeScript declaration for model-viewer web component ─────── */
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "model-viewer": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        src?: string;
+        alt?: string;
+        "auto-rotate"?: boolean | string;
+        "camera-controls"?: boolean | string;
+        "shadow-intensity"?: string;
+        "rotation-per-second"?: string;
+        "camera-orbit"?: string;
+        exposure?: string;
+        ar?: boolean | string;
+      };
+    }
+  }
 }
 
 /* ─── Trust cards ─────────────────────────────────────────────────── */
@@ -166,6 +111,19 @@ const trustItems = [
 
 const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+  const [email, setEmail] = useState("");
+  const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  const handleSubscribe = async (e: FormEvent) => {
+    e.preventDefault();
+    setSubState("loading");
+    const res = await fetch("/api/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    setSubState(res.ok ? "done" : "error");
+  };
 
   return (
     <>
@@ -173,6 +131,11 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
         <title>Apple Store Mbarara</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
+      <Script
+        type="module"
+        src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"
+        strategy="lazyOnload"
+      />
 
       <Header navTree={navTree} />
 
@@ -184,67 +147,77 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
           minHeight: "88vh",
         }}
       >
-        <p className="text-sm font-semibold tracking-wide" style={{ color: "#86868b" }}>
-          Apple Store Mbarara
-        </p>
-        <h1
-          className="mt-2 font-bold leading-tight"
-          style={{
-            fontSize: "clamp(2.4rem, 7vw, 5rem)",
-            letterSpacing: "-0.03em",
-            background: "linear-gradient(180deg, #fff 0%, #d8d8dc 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Genuine Apple.<br />Now in Mbarara.
-        </h1>
-        <p
-          className="mt-4 font-medium max-w-md"
-          style={{ fontSize: "clamp(1rem, 2vw, 1.3rem)", color: "#c7c7cc" }}
-        >
-          Authorized, affordable, and 5&nbsp;minutes from the taxi park.
-        </p>
-        <div className="flex gap-3 mt-8 flex-wrap justify-center">
-          <Link href="/store" passHref>
-            <a
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-85"
-              style={{ background: "#0071e3" }}
-            >
-              Shop now
-            </a>
-          </Link>
-          {waNumber && (
-            <a
-              href={`https://wa.me/${waNumber.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-colors"
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.25)",
-              }}
-            >
-              Ask a Specialist
-            </a>
-          )}
-        </div>
-
-        {/* Device render */}
-        <div
-          className="relative mx-auto mt-14"
-          style={{ width: "min(680px, 90vw)", aspectRatio: "16/10" }}
-        >
+        {/* 3D model — absolutely left, only visible on large screens */}
+        <div className="absolute inset-y-0 left-0 w-[42%] hidden lg:flex items-center justify-center">
           {/* Gold glow */}
           <div style={{
-            position: "absolute", inset: "-20%",
-            background: "radial-gradient(closest-side, rgba(201,161,90,0.2), transparent 70%)",
+            position: "absolute", inset: 0,
+            background: "radial-gradient(closest-side, rgba(201,161,90,0.15), transparent 70%)",
             filter: "blur(40px)",
+            pointerEvents: "none",
           }} />
-          <WatchRender />
-          <IPhoneRender />
-          <MacRender />
+          {/* @ts-ignore */}
+          <model-viewer
+            src="/3d-assets/iphone_17_pro.glb"
+            alt="iPhone 17 Pro"
+            auto-rotate
+            camera-controls
+            rotation-per-second="30deg"
+            shadow-intensity="0.8"
+            exposure="0.9"
+            camera-orbit="0deg 75deg 2.5m"
+            style={{ width: "100%", height: "100%", background: "transparent" }}
+          />
+        </div>
+
+        {/* Text — centered, full width, z-10 so it sits above the model */}
+        <div className="relative z-10 flex flex-col items-center">
+          <p className="text-sm font-semibold tracking-wide" style={{ color: "#86868b" }}>
+            Apple Store Mbarara
+          </p>
+          <h1
+            className="mt-2 font-bold leading-tight"
+            style={{
+              fontSize: "clamp(2.4rem, 7vw, 5rem)",
+              letterSpacing: "-0.03em",
+              background: "linear-gradient(180deg, #fff 0%, #d8d8dc 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Genuine Apple.<br />Now in Mbarara.
+          </h1>
+          <p
+            className="mt-4 font-medium max-w-md"
+            style={{ fontSize: "clamp(1rem, 2vw, 1.3rem)", color: "#c7c7cc" }}
+          >
+            Authorized, affordable, and 5&nbsp;minutes from the taxi park.
+          </p>
+          <div className="flex gap-3 mt-8 flex-wrap justify-center">
+            <Link href="/store" passHref>
+              <a
+                className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-85"
+                style={{ background: "#0071e3" }}
+              >
+                Shop now
+              </a>
+            </Link>
+            {waNumber && (
+              <a
+                href={`https://wa.me/${waNumber.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold transition-colors"
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                }}
+              >
+                Ask a Specialist
+              </a>
+            )}
+          </div>
         </div>
       </section>
 
@@ -270,7 +243,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
                     </a>
                   </Link>
                 </div>
-                <div className="grid justify-items-center grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-y-10 sm:gap-x-6 lg:grid-cols-3 xl:gap-x-8">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {products.slice(0, 3).map((p) => (
                     <ProductCard product={p} key={p.id} />
                   ))}
@@ -322,6 +295,36 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
                 <p className="text-gray-500 text-sm mt-2 leading-relaxed">{item.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TRADE-IN CTA ──────────────────────────────────────────── */}
+      <section className="py-20 bg-white border-t border-gray-200">
+        <div className="max-w-5xl mx-auto px-5 lg:px-0">
+          <div className="rounded-3xl overflow-hidden flex flex-col sm:flex-row items-center gap-0" style={{ background: "linear-gradient(135deg,#1d1d1f 0%,#3a3a3c 100%)" }}>
+            <div className="flex-1 px-10 py-14">
+              <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: "#c9a15a" }}>Trade-in</p>
+              <h2 className="text-3xl font-bold text-white mb-4" style={{ letterSpacing: "-0.02em" }}>Swap your old device</h2>
+              <p className="text-sm leading-relaxed mb-8" style={{ color: "#a1a1a6" }}>
+                Get a fair price for your old iPhone, Mac, or iPad — and put it towards something new.
+                We assess every device and give you a quote same-day.
+              </p>
+              <Link href="/trade-in" passHref>
+                <a className="inline-block bg-white text-gray-900 text-sm font-semibold rounded-full px-7 py-3 hover:bg-gray-100 transition-colors">
+                  Get a trade-in quote
+                </a>
+              </Link>
+            </div>
+            <div className="flex-shrink-0 px-10 py-10 hidden sm:flex items-center justify-center">
+              <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                <rect x="30" y="10" width="40" height="70" rx="6" fill="#3a3a3c" stroke="#c9a15a" strokeWidth="2"/>
+                <rect x="45" y="75" width="10" height="5" rx="2" fill="#c9a15a"/>
+                <path d="M60 55 L85 30 L95 40 L70 65 Z" fill="#c9a15a" opacity="0.8"/>
+                <path d="M85 25 L100 10 L110 20 L95 35 Z" fill="#c9a15a"/>
+                <path d="M60 65 L55 80 L70 75 Z" fill="#c9a15a" opacity="0.6"/>
+              </svg>
+            </div>
           </div>
         </div>
       </section>
@@ -402,6 +405,41 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
           </div>
         </div>
       </section>
+      {/* ── NEWSLETTER ───────────────────────────────────────────── */}
+      <section className="py-20 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-lg mx-auto px-5 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ letterSpacing: "-0.02em" }}>
+            Stay in the loop
+          </h2>
+          <p className="text-sm text-gray-500 mb-8">
+            Get notified about new arrivals, deals, and store events.
+          </p>
+          {subState === "done" ? (
+            <p className="text-teal-600 font-medium text-sm">You are subscribed!</p>
+          ) : (
+            <form onSubmit={handleSubscribe} className="flex gap-3 max-w-sm mx-auto">
+              <input
+                required
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 border border-gray-300 rounded-full px-5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-black"
+              />
+              <button
+                type="submit"
+                disabled={subState === "loading"}
+                className="bg-black text-white text-sm font-semibold rounded-full px-6 py-2.5 hover:bg-gray-800 transition-colors disabled:opacity-50"
+              >
+                {subState === "loading" ? "..." : "Subscribe"}
+              </button>
+            </form>
+          )}
+          {subState === "error" && <p className="text-rose-500 text-xs mt-2">Something went wrong. Try again.</p>}
+        </div>
+      </section>
+
+      <Footer />
     </>
   );
 };

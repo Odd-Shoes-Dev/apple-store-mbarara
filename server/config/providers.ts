@@ -2,11 +2,19 @@ import { pool } from "../adapters/db/pg/client";
 import { PgProductRepository } from "../adapters/db/pg/ProductRepository.pg";
 import { PgAdminUserRepository } from "../adapters/db/pg/AdminUserRepository.pg";
 import { PgCategoryRepository } from "../adapters/db/pg/CategoryRepository.pg";
+import { PgSpecRepository } from "../adapters/db/pg/SpecRepository.pg";
+import { PgReviewRepository } from "../adapters/db/pg/ReviewRepository.pg";
+import { PgTradeinRepository } from "../adapters/db/pg/TradeinRepository.pg";
+import { PgSubscriberRepository } from "../adapters/db/pg/SubscriberRepository.pg";
 import { ImageKitStorageProvider } from "../adapters/storage/imagekit";
 import { StripePaymentProvider } from "../adapters/payments/stripe";
 import { ProductRepository } from "../ports/ProductRepository";
 import { AdminUserRepository } from "../ports/AdminUserRepository";
 import { CategoryRepository } from "../ports/CategoryRepository";
+import { SpecRepository } from "../ports/SpecRepository";
+import { ReviewRepository } from "../ports/ReviewRepository";
+import { TradeinRepository } from "../ports/TradeinRepository";
+import { SubscriberRepository } from "../ports/SubscriberRepository";
 import { StorageProvider } from "../ports/StorageProvider";
 import { PaymentProvider } from "../ports/PaymentProvider";
 
@@ -43,6 +51,38 @@ export function getCategoryRepository(): CategoryRepository {
     categoryRepository = new PgCategoryRepository(pool);
   }
   return categoryRepository;
+}
+
+let specRepository: SpecRepository | undefined;
+export function getSpecRepository(): SpecRepository {
+  if (!specRepository) {
+    specRepository = new PgSpecRepository(pool);
+  }
+  return specRepository;
+}
+
+let reviewRepository: ReviewRepository | undefined;
+export function getReviewRepository(): ReviewRepository {
+  if (!reviewRepository) {
+    reviewRepository = new PgReviewRepository(pool);
+  }
+  return reviewRepository;
+}
+
+let tradeinRepository: TradeinRepository | undefined;
+export function getTradeinRepository(): TradeinRepository {
+  if (!tradeinRepository) {
+    tradeinRepository = new PgTradeinRepository(pool);
+  }
+  return tradeinRepository;
+}
+
+let subscriberRepository: SubscriberRepository | undefined;
+export function getSubscriberRepository(): SubscriberRepository {
+  if (!subscriberRepository) {
+    subscriberRepository = new PgSubscriberRepository(pool);
+  }
+  return subscriberRepository;
 }
 
 let storageProvider: StorageProvider | undefined;

@@ -41,6 +41,15 @@ export function createCatalogService(productRepository: ProductRepository) {
     archiveProduct(id: string): Promise<void> {
       return productRepository.archive(id);
     },
+
+    listRelated(productId: string, categoryId: string | null, limit = 4): Promise<Product[]> {
+      if (!categoryId) return Promise.resolve([]);
+      return productRepository
+        .list({ active: true, categoryIds: [categoryId] })
+        .then((products) =>
+          products.filter((p) => p.id !== productId).slice(0, limit)
+        );
+    },
   };
 }
 

@@ -182,7 +182,7 @@ const StorePage: NextPage<Props> = ({ products, navTree, selectedCategory }) => 
                 : "No products found."}
             </p>
           )}
-          <div className="mt-8 grid justify-items-center grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-y-20 sm:gap-x-6 lg:grid-cols-3 xl:gap-x-8">
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {!loading && sortedProducts().map((p) => (
               <ProductCard product={p} key={p.id} />
             ))}

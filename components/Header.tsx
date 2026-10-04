@@ -93,8 +93,10 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
           <div className="h-16 flex items-center justify-between">
             {/* Logo */}
             <div className="flex-1 flex items-center">
-              <Link href="/" className="flex items-center">
-                <Image src={AppleLogo} width="50" height="50" alt="icon" />
+              <Link href="/" passHref>
+                <a className="flex items-center">
+                  <Image src={AppleLogo} width="50" height="50" alt="icon" />
+                </a>
               </Link>
             </div>
 

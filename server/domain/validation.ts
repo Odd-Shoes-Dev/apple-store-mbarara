@@ -15,6 +15,12 @@ export const newProductSchema = z.object({
   categoryId: z.string().min(1),
   active: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
+  isNewArrival: z.boolean().default(false),
+  originalPriceCents: z.number().int().positive().nullable().default(null),
+  condition: z.enum(["brand_new", "used_uk", "used_local", "refurbished"]).default("brand_new"),
+  stockCount: z.number().int().min(0).default(0),
+  warrantyMonths: z.number().int().positive().nullable().default(null),
+  isAuthentic: z.boolean().default(true),
   images: z.array(productImageSchema).default([]),
 });
 
