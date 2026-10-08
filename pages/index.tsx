@@ -10,6 +10,7 @@ import NewArrivalCard from "../components/NewArrivalCard";
 import { getCatalogService, getCategoryService, getHeroService } from "../server/config/services";
 import { CategoryWithChildren, HeroSlide, Product } from "../server/domain/types";
 import HeroCarousel from "../components/HeroCarousel";
+import Reveal from "../components/Reveal";
 
 type DepartmentSection = {
   department: CategoryWithChildren;
@@ -224,7 +225,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
       {/* ── WHAT'S NEW ───────────────────────────────────────────── */}
       {newArrivals.length > 0 && (
         <section className="py-16 bg-gray-50">
-          <div className="max-w-5xl mx-auto">
+          <Reveal className="max-w-5xl mx-auto">
             <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
               <h2 className="text-2xl font-bold text-gray-900" style={{ letterSpacing: "-0.02em" }}>
                 What&apos;s New
@@ -245,7 +246,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </section>
       )}
 
@@ -257,7 +258,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
               key={department.id}
               className={`py-16 ${i % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
             >
-              <div className="max-w-5xl mx-auto">
+              <Reveal className="max-w-5xl mx-auto">
                 <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
                   <h2
                     className="text-2xl font-bold text-gray-900"
@@ -279,7 +280,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
                     </div>
                   ))}
                 </div>
-              </div>
+              </Reveal>
             </section>
           ))}
         </div>
@@ -298,7 +299,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
 
       {/* ── TRUST CARDS ───────────────────────────────────────────── */}
       <section className="py-20 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-5xl mx-auto px-5 lg:px-0">
+        <Reveal className="max-w-5xl mx-auto px-5 lg:px-0">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-gray-900" style={{ letterSpacing: "-0.02em" }}>
               Why buy from us
@@ -308,31 +309,30 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {trustItems.map((item) => (
-              <div
-                key={item.title}
-                className="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm"
-              >
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
-                  style={{
-                    background: item.green ? "#25D366" : "#f5f5f7",
-                    color: item.green ? "white" : "#1d1d1f",
-                  }}
-                >
-                  {item.icon}
+            {trustItems.map((item, i) => (
+              <Reveal key={item.title} delay={i * 90}>
+                <div className="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm h-full">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+                    style={{
+                      background: item.green ? "#25D366" : "#f5f5f7",
+                      color: item.green ? "white" : "#1d1d1f",
+                    }}
+                  >
+                    {item.icon}
+                  </div>
+                  <h4 className="font-semibold text-gray-900 text-base">{item.title}</h4>
+                  <p className="text-gray-500 text-sm mt-2 leading-relaxed">{item.desc}</p>
                 </div>
-                <h4 className="font-semibold text-gray-900 text-base">{item.title}</h4>
-                <p className="text-gray-500 text-sm mt-2 leading-relaxed">{item.desc}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── TRADE-IN CTA ──────────────────────────────────────────── */}
       <section className="py-20 bg-white border-t border-gray-200">
-        <div className="max-w-5xl mx-auto px-5 lg:px-0">
+        <Reveal className="max-w-5xl mx-auto px-5 lg:px-0">
           <div className="rounded-3xl overflow-hidden flex flex-col sm:flex-row items-center gap-0" style={{ background: "linear-gradient(135deg,#1d1d1f 0%,#3a3a3c 100%)" }}>
             <div className="flex-1 px-10 py-14">
               <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: "#c9a15a" }}>Trade-in</p>
@@ -357,12 +357,12 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
               </svg>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── FIND US ───────────────────────────────────────────────── */}
       <section className="py-20 bg-white border-t border-gray-200">
-        <div className="max-w-5xl mx-auto px-5 lg:px-0">
+        <Reveal className="max-w-5xl mx-auto px-5 lg:px-0">
           <div
             className="overflow-hidden rounded-3xl grid grid-cols-1 sm:grid-cols-2"
             style={{ background: "#000" }}
@@ -434,11 +434,11 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
               />
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
       {/* ── NEWSLETTER ───────────────────────────────────────────── */}
       <section className="py-20 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-lg mx-auto px-5 text-center">
+        <Reveal className="max-w-lg mx-auto px-5 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ letterSpacing: "-0.02em" }}>
             Stay in the loop
           </h2>
@@ -467,7 +467,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
             </form>
           )}
           {subState === "error" && <p className="text-rose-500 text-xs mt-2">Something went wrong. Try again.</p>}
-        </div>
+        </Reveal>
       </section>
 
       <Footer />
