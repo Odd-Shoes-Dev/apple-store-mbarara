@@ -198,7 +198,7 @@ const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
                 </p>
                 {isOnSale && product.originalPriceCents && (
                   <p className="text-xl text-gray-400 line-through mt-1">
-                    {formatPrice(product.originalPriceCents)}
+                    {formatPrice(product.originalPriceCents / 100)}
                   </p>
                 )}
               </div>

@@ -5,7 +5,6 @@ import Script from "next/script";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import ProductCard from "../components/ProductCard";
 import NewArrivalCard from "../components/NewArrivalCard";
 import { getCatalogService, getCategoryService, getHeroService } from "../server/config/services";
 import { CategoryWithChildren, HeroSlide, Product } from "../server/domain/types";
@@ -275,8 +274,8 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
                 {/* Horizontal scroll row */}
                 <div className="flex gap-4 overflow-x-auto pb-4 px-5 lg:px-0 snap-x snap-mandatory scroll-smooth" style={{ scrollbarWidth: "none" }}>
                   {products.map((p) => (
-                    <div key={p.id} className="flex-none w-56 snap-start">
-                      <ProductCard product={p} />
+                    <div key={p.id} className="snap-start">
+                      <NewArrivalCard product={p} />
                     </div>
                   ))}
                 </div>
@@ -296,6 +295,57 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
           </p>
         </section>
       )}
+
+      {/* ── 3D SPOTLIGHT ─────────────────────────────────────────── */}
+      <section
+        className="relative overflow-hidden"
+        style={{ background: "radial-gradient(120% 100% at 50% 100%, #1c1c1e 0%, #000 55%)" }}
+      >
+        <Reveal className="max-w-5xl mx-auto px-5 lg:px-0 py-20 flex flex-col items-center text-center">
+          <p className="text-sm font-semibold tracking-wide" style={{ color: "#86868b" }}>
+            iPhone 17 Pro
+          </p>
+          <h2
+            className="mt-2 font-bold leading-tight"
+            style={{
+              fontSize: "clamp(2rem, 6vw, 3.75rem)",
+              letterSpacing: "-0.03em",
+              background: "linear-gradient(180deg, #fff 0%, #d8d8dc 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Look closer.
+          </h2>
+          <p className="mt-3 max-w-md" style={{ color: "#c7c7cc" }}>
+            Drag to rotate. Every angle, every detail.
+          </p>
+
+          <div className="w-full max-w-lg mt-6" style={{ height: "clamp(280px, 40vw, 420px)" }}>
+            {/* @ts-ignore */}
+            <model-viewer
+              src="/3d-assets/iphone_17_pro.glb"
+              alt="iPhone 17 Pro"
+              auto-rotate
+              camera-controls
+              rotation-per-second="30deg"
+              shadow-intensity="0.8"
+              exposure="0.9"
+              camera-orbit="0deg 75deg 2.5m"
+              style={{ width: "100%", height: "100%", background: "transparent" }}
+            />
+          </div>
+
+          <Link href="/store" passHref>
+            <a
+              className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-85 mt-4"
+              style={{ background: "#0071e3" }}
+            >
+              Shop now
+            </a>
+          </Link>
+        </Reveal>
+      </section>
 
       {/* ── TRUST CARDS ───────────────────────────────────────────── */}
       <section className="py-20 bg-gray-50 border-t border-gray-200">

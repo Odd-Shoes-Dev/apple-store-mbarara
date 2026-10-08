@@ -95,7 +95,7 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
           </span>
           {isOnSale && product.originalPriceCents && (
             <span className="text-xs text-gray-400 line-through">
-              {formatPrice(product.originalPriceCents)}
+              {formatPrice(product.originalPriceCents / 100)}
             </span>
           )}
         </div>
