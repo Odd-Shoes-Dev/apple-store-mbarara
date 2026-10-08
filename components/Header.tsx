@@ -251,14 +251,17 @@ const Header: FunctionComponent = () => {
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 -translate-y-2"
           >
-            <div className="sm:hidden absolute top-full inset-x-0 z-50 bg-white border-t border-black/[0.08] shadow-lg py-3 px-5 flex flex-col">
+            <div className="sm:hidden absolute top-full inset-x-0 z-50 bg-white border-t border-black/[0.08] shadow-lg px-5 flex flex-col divide-y divide-gray-100">
               {NAV_LINKS.map((link) => (
                 <Link key={link.href} href={link.href} passHref>
                   <a
                     onClick={() => setMobileOpen(false)}
-                    className="px-1 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900"
+                    className="flex items-center justify-between py-4 text-xl font-semibold text-gray-900 hover:text-gray-600"
                   >
                     {link.label}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </a>
                 </Link>
               ))}
