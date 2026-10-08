@@ -6,49 +6,28 @@ import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import NewArrivalCard from "../components/NewArrivalCard";
-import { getCatalogService, getCategoryService, getHeroService } from "../server/config/services";
-import { CategoryWithChildren, HeroSlide, Product } from "../server/domain/types";
+import { getCatalogService, getHeroService } from "../server/config/services";
+import { HeroSlide, Product } from "../server/domain/types";
 import HeroCarousel from "../components/HeroCarousel";
 import Reveal from "../components/Reveal";
 
-type DepartmentSection = {
-  department: CategoryWithChildren;
-  products: Product[];
-};
-
 type Props = {
-  navTree: CategoryWithChildren[];
-  sections: DepartmentSection[];
+  featuredProducts: Product[];
   heroSlides: HeroSlide[];
   newArrivals: Product[];
 };
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  const categoryService = getCategoryService();
   const catalogService = getCatalogService();
-  const [navTree, featuredProducts, heroSlides, newArrivals] = await Promise.all([
-    categoryService.getNavTree(),
+  const [featuredProducts, heroSlides, newArrivals] = await Promise.all([
     catalogService.listFeaturedProducts(),
     getHeroService().listActive(),
     catalogService.listNewArrivals(),
   ]);
 
-  const filteredTree = navTree.filter((d) => d.slug !== "other");
-
-  const sections: DepartmentSection[] = filteredTree
-    .map((dept) => {
-      const deptCategoryIds = new Set([dept.id, ...dept.children.map((c) => c.id)]);
-      const products = featuredProducts.filter(
-        (p) => p.category && deptCategoryIds.has(p.category.id)
-      );
-      return { department: dept, products };
-    })
-    .filter(({ products }) => products.length > 0);
-
   return {
     props: {
-      navTree: JSON.parse(JSON.stringify(filteredTree)),
-      sections: JSON.parse(JSON.stringify(sections)),
+      featuredProducts: JSON.parse(JSON.stringify(featuredProducts)),
       heroSlides: JSON.parse(JSON.stringify(heroSlides)),
       newArrivals: JSON.parse(JSON.stringify(newArrivals)),
     },
@@ -118,7 +97,7 @@ const trustItems = [
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 
-const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArrivals }) => {
+const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrivals }) => {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const [email, setEmail] = useState("");
   const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -252,47 +231,34 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
         </section>
       )}
 
-      {/* ── FEATURED PRODUCTS BY DEPARTMENT ──────────────────────── */}
-      {sections.length > 0 && (
-        <div className="bg-white">
-          {sections.map(({ department, products }, i) => (
-            <section
-              key={department.id}
-              className={`py-16 ${i % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
-            >
-              <Reveal className="max-w-5xl mx-auto">
-                <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
-                  <h2
-                    className="font-bold text-gray-900"
-                    style={
-                      department.slug === "iphone"
-                        ? { fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }
-                        : { fontSize: "1.5rem", letterSpacing: "-0.02em" }
-                    }
-                  >
-                    {department.name}
-                  </h2>
-                  <Link href={{ pathname: "/store", query: { category: department.slug } }} passHref>
-                    <a className="text-sm font-medium text-blue-600 hover:text-blue-700 flex-shrink-0">
-                      Browse all →
-                    </a>
-                  </Link>
+      {/* ── FEATURED ─────────────────────────────────────────────── */}
+      {featuredProducts.length > 0 ? (
+        <section className="py-16 bg-white">
+          <Reveal className="max-w-5xl mx-auto">
+            <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
+              <h2
+                className="font-bold text-gray-900"
+                style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }}
+              >
+                Featured
+              </h2>
+              <Link href="/store" passHref>
+                <a className="text-sm font-medium text-blue-600 hover:text-blue-700 flex-shrink-0">
+                  View all →
+                </a>
+              </Link>
+            </div>
+            {/* Horizontal scroll row */}
+            <div className="flex gap-4 overflow-x-auto pb-4 px-5 lg:px-0 snap-x snap-mandatory scroll-smooth" style={{ scrollbarWidth: "none" }}>
+              {featuredProducts.map((p) => (
+                <div key={p.id} className="snap-start">
+                  <NewArrivalCard product={p} />
                 </div>
-                {/* Horizontal scroll row */}
-                <div className="flex gap-4 overflow-x-auto pb-4 px-5 lg:px-0 snap-x snap-mandatory scroll-smooth" style={{ scrollbarWidth: "none" }}>
-                  {products.map((p) => (
-                    <div key={p.id} className="snap-start">
-                      <NewArrivalCard product={p} />
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            </section>
-          ))}
-        </div>
-      )}
-
-      {sections.length === 0 && (
+              ))}
+            </div>
+          </Reveal>
+        </section>
+      ) : (
         <section className="py-24 text-center bg-white">
           <p className="text-gray-500 text-sm">
             No featured products yet.{" "}
