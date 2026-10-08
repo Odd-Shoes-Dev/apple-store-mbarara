@@ -80,6 +80,27 @@ export type ProductListFilter = {
   featured?: boolean;
 };
 
+export type HeroSlide = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  categoryLabel: string | null;
+  priceLabel: string | null;
+  imageUrl: string | null;
+  imageKey: string | null;
+  ctaPrimaryLabel: string;
+  ctaPrimaryHref: string;
+  backgroundColor: string;
+  accentColor: string;
+  position: number;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type NewHeroSlideInput = Omit<HeroSlide, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateHeroSlideInput = Partial<NewHeroSlideInput>;
+
 export type ProductSpec = {
   id: string;
   productId: string;

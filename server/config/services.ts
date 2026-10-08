@@ -2,6 +2,7 @@ import { createCatalogService } from "../services/catalogService";
 import { createCheckoutService } from "../services/checkoutService";
 import { createAuthService } from "../services/authService";
 import { createCategoryService } from "../services/categoryService";
+import { createHeroService } from "../services/heroService";
 import { createSpecService } from "../services/specService";
 import { createReviewService } from "../services/reviewService";
 import { createTradeinService } from "../services/tradeinService";
@@ -11,6 +12,7 @@ import {
   getCategoryRepository,
   getPaymentProvider,
   getProductRepository,
+  getHeroSlideRepository,
   getSpecRepository,
   getReviewRepository,
   getTradeinRepository,
@@ -47,6 +49,14 @@ export function getCategoryService() {
     categoryService = createCategoryService(getCategoryRepository());
   }
   return categoryService;
+}
+
+let heroService: ReturnType<typeof createHeroService> | undefined;
+export function getHeroService() {
+  if (!heroService) {
+    heroService = createHeroService(getHeroSlideRepository());
+  }
+  return heroService;
 }
 
 let specService: ReturnType<typeof createSpecService> | undefined;

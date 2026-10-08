@@ -6,8 +6,9 @@ import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
-import { getCatalogService, getCategoryService } from "../server/config/services";
-import { CategoryWithChildren, Product } from "../server/domain/types";
+import { getCatalogService, getCategoryService, getHeroService } from "../server/config/services";
+import { CategoryWithChildren, HeroSlide, Product } from "../server/domain/types";
+import HeroCarousel from "../components/HeroCarousel";
 
 type DepartmentSection = {
   department: CategoryWithChildren;
@@ -17,13 +18,15 @@ type DepartmentSection = {
 type Props = {
   navTree: CategoryWithChildren[];
   sections: DepartmentSection[];
+  heroSlides: HeroSlide[];
 };
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
   const categoryService = getCategoryService();
-  const [navTree, featuredProducts] = await Promise.all([
+  const [navTree, featuredProducts, heroSlides] = await Promise.all([
     categoryService.getNavTree(),
     getCatalogService().listFeaturedProducts(),
+    getHeroService().listActive(),
   ]);
 
   const filteredTree = navTree.filter((d) => d.slug !== "other");
@@ -42,6 +45,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
     props: {
       navTree: JSON.parse(JSON.stringify(filteredTree)),
       sections: JSON.parse(JSON.stringify(sections)),
+      heroSlides: JSON.parse(JSON.stringify(heroSlides)),
     },
   };
 };
@@ -109,7 +113,7 @@ const trustItems = [
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 
-const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
+const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides }) => {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const [email, setEmail] = useState("");
   const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -140,86 +144,77 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
       <Header navTree={navTree} />
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section
-        className="relative flex flex-col items-center text-center text-white overflow-hidden px-5 pt-20 pb-14"
-        style={{
-          background: "radial-gradient(120% 100% at 50% 0%, #1c1c1e 0%, #000 55%)",
-          minHeight: "88vh",
-        }}
-      >
-        {/* 3D model — absolutely left, only visible on large screens */}
-        <div className="absolute inset-y-0 left-0 w-[42%] hidden lg:flex items-center justify-center">
-          {/* Gold glow */}
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "radial-gradient(closest-side, rgba(201,161,90,0.15), transparent 70%)",
-            filter: "blur(40px)",
-            pointerEvents: "none",
-          }} />
-          {/* @ts-ignore */}
-          <model-viewer
-            src="/3d-assets/iphone_17_pro.glb"
-            alt="iPhone 17 Pro"
-            auto-rotate
-            camera-controls
-            rotation-per-second="30deg"
-            shadow-intensity="0.8"
-            exposure="0.9"
-            camera-orbit="0deg 75deg 2.5m"
-            style={{ width: "100%", height: "100%", background: "transparent" }}
-          />
-        </div>
-
-        {/* Text — centered, full width, z-10 so it sits above the model */}
-        <div className="relative z-10 flex flex-col items-center">
-          <p className="text-sm font-semibold tracking-wide" style={{ color: "#86868b" }}>
-            Apple Store Mbarara
-          </p>
-          <h1
-            className="mt-2 font-bold leading-tight"
-            style={{
-              fontSize: "clamp(2.4rem, 7vw, 5rem)",
-              letterSpacing: "-0.03em",
-              background: "linear-gradient(180deg, #fff 0%, #d8d8dc 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Genuine Apple.<br />Now in Mbarara.
-          </h1>
-          <p
-            className="mt-4 font-medium max-w-md"
-            style={{ fontSize: "clamp(1rem, 2vw, 1.3rem)", color: "#c7c7cc" }}
-          >
-            Authorized, affordable, and 5&nbsp;minutes from the taxi park.
-          </p>
-          <div className="flex gap-3 mt-8 flex-wrap justify-center">
-            <Link href="/store" passHref>
-              <a
-                className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-85"
-                style={{ background: "#0071e3" }}
-              >
-                Shop now
-              </a>
-            </Link>
-            {waNumber && (
-              <a
-                href={`https://wa.me/${waNumber.replace(/\D/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold transition-colors"
-                style={{
-                  background: "rgba(255,255,255,0.1)",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.25)",
-                }}
-              >
-                Ask a Specialist
-              </a>
-            )}
+      {heroSlides.length > 0 ? (
+        <HeroCarousel slides={heroSlides} whatsappNumber={waNumber} />
+      ) : (
+        /* Default hero shown until the admin adds slides */
+        <section
+          className="relative flex flex-col items-center text-center text-white overflow-hidden px-5 pt-20 pb-14"
+          style={{
+            background: "radial-gradient(120% 100% at 50% 0%, #1c1c1e 0%, #000 55%)",
+            minHeight: "88vh",
+          }}
+        >
+          {/* 3D model — absolutely left, only visible on large screens */}
+          <div className="absolute inset-y-0 left-0 w-[42%] hidden lg:flex items-center justify-center">
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "radial-gradient(closest-side, rgba(201,161,90,0.15), transparent 70%)",
+              filter: "blur(40px)",
+              pointerEvents: "none",
+            }} />
+            {/* @ts-ignore */}
+            <model-viewer
+              src="/3d-assets/iphone_17_pro.glb"
+              alt="iPhone 17 Pro"
+              auto-rotate
+              camera-controls
+              rotation-per-second="30deg"
+              shadow-intensity="0.8"
+              exposure="0.9"
+              camera-orbit="0deg 75deg 2.5m"
+              style={{ width: "100%", height: "100%", background: "transparent" }}
+            />
           </div>
-        </div>
-      </section>
+          <div className="relative z-10 flex flex-col items-center">
+            <p className="text-sm font-semibold tracking-wide" style={{ color: "#86868b" }}>
+              Apple Store Mbarara
+            </p>
+            <h1
+              className="mt-2 font-bold leading-tight"
+              style={{
+                fontSize: "clamp(2.4rem, 7vw, 5rem)",
+                letterSpacing: "-0.03em",
+                background: "linear-gradient(180deg, #fff 0%, #d8d8dc 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Genuine Apple.<br />Now in Mbarara.
+            </h1>
+            <p className="mt-4 font-medium max-w-md" style={{ fontSize: "clamp(1rem, 2vw, 1.3rem)", color: "#c7c7cc" }}>
+              Authorized, affordable, and 5&nbsp;minutes from the taxi park.
+            </p>
+            <div className="flex gap-3 mt-8 flex-wrap justify-center">
+              <Link href="/store" passHref>
+                <a className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-85" style={{ background: "#0071e3" }}>
+                  Shop now
+                </a>
+              </Link>
+              {waNumber && (
+                <a
+                  href={`https://wa.me/${waNumber.replace(/\D/g, "")}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold transition-colors"
+                  style={{ background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)" }}
+                >
+                  Ask a Specialist
+                </a>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── FEATURED PRODUCTS BY DEPARTMENT ──────────────────────── */}
       {sections.length > 0 && (

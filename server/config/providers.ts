@@ -2,6 +2,7 @@ import { pool } from "../adapters/db/pg/client";
 import { PgProductRepository } from "../adapters/db/pg/ProductRepository.pg";
 import { PgAdminUserRepository } from "../adapters/db/pg/AdminUserRepository.pg";
 import { PgCategoryRepository } from "../adapters/db/pg/CategoryRepository.pg";
+import { PgHeroSlideRepository } from "../adapters/db/pg/HeroSlideRepository.pg";
 import { PgSpecRepository } from "../adapters/db/pg/SpecRepository.pg";
 import { PgReviewRepository } from "../adapters/db/pg/ReviewRepository.pg";
 import { PgTradeinRepository } from "../adapters/db/pg/TradeinRepository.pg";
@@ -11,6 +12,7 @@ import { StripePaymentProvider } from "../adapters/payments/stripe";
 import { ProductRepository } from "../ports/ProductRepository";
 import { AdminUserRepository } from "../ports/AdminUserRepository";
 import { CategoryRepository } from "../ports/CategoryRepository";
+import { HeroSlideRepository } from "../ports/HeroSlideRepository";
 import { SpecRepository } from "../ports/SpecRepository";
 import { ReviewRepository } from "../ports/ReviewRepository";
 import { TradeinRepository } from "../ports/TradeinRepository";
@@ -51,6 +53,14 @@ export function getCategoryRepository(): CategoryRepository {
     categoryRepository = new PgCategoryRepository(pool);
   }
   return categoryRepository;
+}
+
+let heroSlideRepository: HeroSlideRepository | undefined;
+export function getHeroSlideRepository(): HeroSlideRepository {
+  if (!heroSlideRepository) {
+    heroSlideRepository = new PgHeroSlideRepository(pool);
+  }
+  return heroSlideRepository;
 }
 
 let specRepository: SpecRepository | undefined;
