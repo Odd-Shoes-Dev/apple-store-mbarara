@@ -55,6 +55,7 @@ const Header: FunctionComponent = () => {
   };
 
   const [hidden, setHidden] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -210,19 +211,59 @@ const Header: FunctionComponent = () => {
                   </Popover.Panel>
                 </Transition>
               </Popover>
+
+              {/* Hamburger — mobile only, asymmetric bars that morph into an X */}
+              <button
+                onClick={() => setMobileOpen((v) => !v)}
+                className="sm:hidden ml-3 -mr-1 p-2 flex items-center justify-center"
+                aria-label="Toggle menu"
+                aria-expanded={mobileOpen}
+              >
+                <div className="relative w-6 h-4">
+                  <span
+                    className={`absolute left-0 h-[2px] bg-gray-900 rounded-full transition-all duration-300 ease-out ${
+                      mobileOpen ? "w-6 top-[7px] rotate-45" : "w-6 top-0"
+                    }`}
+                  />
+                  <span
+                    className={`absolute left-0 top-[7px] h-[2px] bg-gray-900 rounded-full transition-all duration-200 ease-out ${
+                      mobileOpen ? "w-0 opacity-0" : "w-3.5 opacity-100"
+                    }`}
+                  />
+                  <span
+                    className={`absolute left-0 h-[2px] bg-gray-900 rounded-full transition-all duration-300 ease-out ${
+                      mobileOpen ? "w-6 top-[7px] -rotate-45" : "w-5 top-[14px]"
+                    }`}
+                  />
+                </div>
+              </button>
             </div>
           </div>
 
-          {/* Nav links (mobile second row) */}
-          <div className="grid grid-cols-3 sm:hidden gap-x-2 gap-y-2 border-t py-2">
-            {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} passHref>
-                <a className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center">
-                  {link.label}
-                </a>
-              </Link>
-            ))}
-          </div>
+          {/* Mobile menu panel — overlays the page instead of pushing it down */}
+          <Transition
+            show={mobileOpen}
+            as={Fragment}
+            enter="transition ease-out duration-200"
+            enterFrom="opacity-0 -translate-y-2"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition ease-in duration-150"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 -translate-y-2"
+          >
+            <div className="sm:hidden absolute top-full inset-x-0 z-50 bg-white border-t border-black/[0.08] shadow-lg py-3 px-5 flex flex-col">
+              {NAV_LINKS.map((link) => (
+                <Link key={link.href} href={link.href} passHref>
+                  <a
+                    onClick={() => setMobileOpen(false)}
+                    className="px-1 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    {link.label}
+                  </a>
+                </Link>
+              ))}
+            </div>
+          </Transition>
         </div>
       </nav>
     </header>
