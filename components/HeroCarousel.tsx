@@ -33,7 +33,7 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
   return (
     <div
       className="relative w-full overflow-hidden"
-      style={{ background: slide.backgroundColor, minHeight: "520px" }}
+      style={{ background: slide.backgroundColor }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -45,12 +45,24 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
         }}
       />
 
-      <div className="relative max-w-5xl mx-auto px-6 lg:px-0 flex items-center min-h-[520px]">
-        {/* Text content — left side */}
-        <div className="flex-1 py-20 pr-8 z-10">
+      <div className="relative max-w-5xl mx-auto px-6 lg:px-0 flex flex-col md:flex-row md:items-center min-h-[480px] md:min-h-[520px] py-14 md:py-0">
+        {/* Product image — mobile: stacked above text */}
+        {slide.imageUrl && (
+          <div className="flex md:hidden items-center justify-center mb-6">
+            <img
+              src={slide.imageUrl}
+              alt={slide.title}
+              className="max-h-48 max-w-full object-contain"
+              style={{ filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.5))" }}
+            />
+          </div>
+        )}
+
+        {/* Text content */}
+        <div className="flex-1 md:py-20 md:pr-8 z-10 text-center md:text-left">
           {slide.categoryLabel && (
             <p
-              className="text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2"
+              className="text-xs font-bold uppercase tracking-widest mb-4 flex items-center justify-center md:justify-start gap-2"
               style={{ color: slide.accentColor }}
             >
               <span
@@ -62,7 +74,7 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
           )}
 
           <h1
-            className="text-5xl sm:text-6xl font-black text-white leading-none tracking-tight"
+            className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-none tracking-tight"
             style={{ letterSpacing: "-0.03em" }}
           >
             {slide.title}
@@ -80,7 +92,7 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
             </p>
           )}
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap gap-3 justify-center md:justify-start">
             <Link href={slide.ctaPrimaryHref} passHref>
               <a
                 className="inline-flex items-center justify-center px-7 py-3 rounded-full text-sm font-bold transition-opacity hover:opacity-90"
@@ -105,7 +117,7 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
           </div>
         </div>
 
-        {/* Product image — right side */}
+        {/* Product image — desktop: absolute, right side */}
         {slide.imageUrl && (
           <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-[45%] items-center justify-center pointer-events-none">
             <img
