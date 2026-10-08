@@ -229,8 +229,8 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
               key={department.id}
               className={`py-16 ${i % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
             >
-              <div className="max-w-5xl mx-auto px-5 lg:px-0">
-                <div className="flex items-baseline justify-between mb-8">
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
                   <h2
                     className="text-2xl font-bold text-gray-900"
                     style={{ letterSpacing: "-0.02em" }}
@@ -238,14 +238,17 @@ const LandingPage: NextPage<Props> = ({ navTree, sections }) => {
                     {department.name}
                   </h2>
                   <Link href={{ pathname: "/store", query: { category: department.slug } }} passHref>
-                    <a className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                      Browse all {department.name} →
+                    <a className="text-sm font-medium text-blue-600 hover:text-blue-700 flex-shrink-0">
+                      Browse all →
                     </a>
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {products.slice(0, 3).map((p) => (
-                    <ProductCard product={p} key={p.id} />
+                {/* Horizontal scroll row */}
+                <div className="flex gap-4 overflow-x-auto pb-4 px-5 lg:px-0 snap-x snap-mandatory scroll-smooth" style={{ scrollbarWidth: "none" }}>
+                  {products.map((p) => (
+                    <div key={p.id} className="flex-none w-56 snap-start">
+                      <ProductCard product={p} />
+                    </div>
                   ))}
                 </div>
               </div>
