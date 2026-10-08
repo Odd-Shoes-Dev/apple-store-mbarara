@@ -13,13 +13,17 @@ import {
   getProductImage,
   getProductName,
 } from "../utils/computed";
-import { CategoryWithChildren } from "../server/domain/types";
 
-type Props = {
-  navTree: CategoryWithChildren[];
-};
+const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/store" },
+  { label: "Repair", href: "/repair" },
+  { label: "Trade-in", href: "/trade-in" },
+  { label: "Delivery", href: "/delivery" },
+  { label: "About", href: "/about" },
+];
 
-const Header: FunctionComponent<Props> = ({ navTree }) => {
+const Header: FunctionComponent = () => {
   const { items, remove, removeAll, total } = useContext(CartContext);
 
   const removeFromCart = (productID: string) => {
@@ -100,56 +104,15 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
               </Link>
             </div>
 
-            {/* Category links */}
+            {/* Nav links */}
             <div className="hidden sm:flex items-center gap-6">
-              {navTree.map((department) =>
-                department.children.length === 0 ? (
-                  <Link
-                    key={department.id}
-                    href={{ pathname: "/store", query: { category: department.slug } }}
-                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
-                  >
-                    {department.name}
-                  </Link>
-                ) : (
-                  <Popover key={department.id} className="relative">
-                    {({ close }) => (
-                      <>
-                        <Popover.Button className="text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
-                          {department.name}
-                        </Popover.Button>
-                        <Transition
-                          as={Fragment}
-                          enter="transition ease-out duration-150"
-                          enterFrom="opacity-0 translate-y-1"
-                          enterTo="opacity-100 translate-y-0"
-                          leave="transition ease-in duration-100"
-                          leaveFrom="opacity-100 translate-y-0"
-                          leaveTo="opacity-0 translate-y-1"
-                        >
-                          <Popover.Panel className="absolute left-0 top-full mt-2 w-56 bg-white shadow-lg rounded-md ring-1 ring-black ring-opacity-5 py-2 z-50">
-                            <div className="flex flex-col">
-                              <Link href={{ pathname: "/store", query: { category: department.slug } }} passHref>
-                                <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50">
-                                  {`All ${department.name}`}
-                                </a>
-                              </Link>
-                              <div className="border-t my-1" />
-                              {department.children.map((model) => (
-                                <Link key={model.id} href={{ pathname: "/store", query: { category: model.slug } }} passHref>
-                                  <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                    {model.name}
-                                  </a>
-                                </Link>
-                              ))}
-                            </div>
-                          </Popover.Panel>
-                        </Transition>
-                      </>
-                    )}
-                  </Popover>
-                )
-              )}
+              {NAV_LINKS.map((link) => (
+                <Link key={link.href} href={link.href} passHref>
+                  <a className="text-sm font-medium text-gray-700 hover:text-gray-900">
+                    {link.label}
+                  </a>
+                </Link>
+              ))}
             </div>
 
             <div className="flex-1 flex items-center justify-end">
@@ -250,56 +213,15 @@ const Header: FunctionComponent<Props> = ({ navTree }) => {
             </div>
           </div>
 
-          {/* Category links (mobile second row) */}
+          {/* Nav links (mobile second row) */}
           <div className="grid grid-cols-3 sm:hidden gap-x-2 gap-y-2 border-t py-2">
-            {navTree.map((department, index) => {
-              const col = index % 3;
-              const panelAlign = col === 2 ? "right-0" : "left-0";
-              return department.children.length === 0 ? (
-                <Link key={department.id} href={{ pathname: "/store", query: { category: department.slug } }} passHref>
-                  <a className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center">
-                    {department.name}
-                  </a>
-                </Link>
-              ) : (
-                <Popover key={department.id} className="relative">
-                  {({ close }) => (
-                    <>
-                      <Popover.Button className="text-xs font-medium text-gray-700 hover:text-gray-900 focus:outline-none w-full text-center">
-                        {department.name}
-                      </Popover.Button>
-                      <Transition
-                        as={Fragment}
-                        enter="transition ease-out duration-150"
-                        enterFrom="opacity-0 translate-y-1"
-                        enterTo="opacity-100 translate-y-0"
-                        leave="transition ease-in duration-100"
-                        leaveFrom="opacity-100 translate-y-0"
-                        leaveTo="opacity-0 translate-y-1"
-                      >
-                        <Popover.Panel className={`absolute ${panelAlign} top-full mt-1 w-44 bg-white shadow-lg rounded-md ring-1 ring-black ring-opacity-5 py-2 z-50`}>
-                          <div className="flex flex-col">
-                            <Link href={{ pathname: "/store", query: { category: department.slug } }} passHref>
-                              <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50">
-                                {`All ${department.name}`}
-                              </a>
-                            </Link>
-                            <div className="border-t my-1" />
-                            {department.children.map((model) => (
-                              <Link key={model.id} href={{ pathname: "/store", query: { category: model.slug } }} passHref>
-                                <a onClick={() => close()} className="pl-4 pr-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                  {model.name}
-                                </a>
-                              </Link>
-                            ))}
-                          </div>
-                        </Popover.Panel>
-                      </Transition>
-                    </>
-                  )}
-                </Popover>
-              );
-            })}
+            {NAV_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} passHref>
+                <a className="text-xs font-medium text-gray-700 hover:text-gray-900 text-center">
+                  {link.label}
+                </a>
+              </Link>
+            ))}
           </div>
         </div>
       </nav>

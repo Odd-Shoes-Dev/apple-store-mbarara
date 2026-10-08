@@ -16,9 +16,10 @@ const shopLinks = [
 ];
 
 const supportLinks = [
-  { label: "Repairs", href: "#" },
-  { label: "Warranty", href: "#" },
+  { label: "Repairs", href: "/repair" },
   { label: "Trade-in", href: "/trade-in" },
+  { label: "Delivery", href: "/delivery" },
+  { label: "About", href: "/about" },
 ];
 
 const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;

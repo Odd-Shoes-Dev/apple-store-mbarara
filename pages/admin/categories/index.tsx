@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { requireAdminPage } from "../../../lib/adminAuth";
+import Spinner from "../../../components/Spinner";
 import { Category } from "../../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -103,7 +104,11 @@ const AdminCategories: NextPage = () => {
             {!loading && categories.length === 0 && (
               <p className="text-center text-sm text-gray-500 py-8">No categories yet.</p>
             )}
-            {loading && <p className="text-center text-sm text-gray-500 py-8">Loading...</p>}
+            {loading && (
+              <div className="flex justify-center py-12">
+                <Spinner />
+              </div>
+            )}
           </div>
         </main>
       </div>

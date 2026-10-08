@@ -17,8 +17,8 @@ import { useContext, useState, useEffect } from "react";
 import CartContext from "../../components/context/CartContext";
 import { useRouter } from "next/router";
 import { Slide } from "@mui/material";
-import { getCatalogService, getCategoryService, getSpecService, getReviewService } from "../../server/config/services";
-import { CONDITION_LABELS, CategoryWithChildren, Product, ProductSpec, Review } from "../../server/domain/types";
+import { getCatalogService, getSpecService, getReviewService } from "../../server/config/services";
+import { CONDITION_LABELS, Product, ProductSpec, Review } from "../../server/domain/types";
 import ProductCard from "../../components/ProductCard";
 
 interface CustomContext extends GetServerSidePropsContext {
@@ -29,7 +29,6 @@ interface CustomContext extends GetServerSidePropsContext {
 
 type Props = {
   product: Product | null;
-  navTree: CategoryWithChildren[];
   whatsappNumber: string | null;
   related: Product[];
   specs: ProductSpec[];
@@ -42,10 +41,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const { pageId } = context.query;
 
   const catalogService = getCatalogService();
-  const [product, navTree] = await Promise.all([
-    pageId ? catalogService.getActiveProductById(pageId) : Promise.resolve(null),
-    getCategoryService().getNavTree(),
-  ]);
+  const product = pageId ? await catalogService.getActiveProductById(pageId) : null;
 
   const [related, specs, reviews] = await Promise.all([
     product
@@ -58,7 +54,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   return {
     props: {
       product: product ? JSON.parse(JSON.stringify(product)) : null,
-      navTree: JSON.parse(JSON.stringify(navTree.filter((d) => d.slug !== "other"))),
       whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? null,
       related: JSON.parse(JSON.stringify(related)),
       specs: JSON.parse(JSON.stringify(specs)),
@@ -67,7 +62,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   };
 };
 
-const ProductPage: NextPage<Props> = ({ product, navTree, related, specs, reviews }) => {
+const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
   const { add, alert = null, isAlertVisible } = useContext(CartContext);
   const [hideAlert, setHideAlert] = useState(false);
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
@@ -114,7 +109,11 @@ const ProductPage: NextPage<Props> = ({ product, navTree, related, specs, review
 
   const handleBack = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    router.push("/store");
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/store");
+    }
   };
 
   if (!product) {
@@ -124,7 +123,7 @@ const ProductPage: NextPage<Props> = ({ product, navTree, related, specs, review
           <title>Apple Store</title>
         </Head>
         <main>
-          <Header navTree={navTree} />
+          <Header />
           <p>Product not found</p>
         </main>
       </>
@@ -163,7 +162,7 @@ const ProductPage: NextPage<Props> = ({ product, navTree, related, specs, review
       </Head>
 
       <main>
-        <Header navTree={navTree} />
+        <Header />
         <div className="bg-gray-100 min-h-screen relative w-full pb-16">
           <div className="w-full max-w-5xl px-8 mx-auto sm:px-8 lg:px-3">
             <button

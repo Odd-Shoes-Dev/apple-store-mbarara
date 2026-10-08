@@ -6,6 +6,7 @@ import { createHeroService } from "../services/heroService";
 import { createSpecService } from "../services/specService";
 import { createReviewService } from "../services/reviewService";
 import { createTradeinService } from "../services/tradeinService";
+import { createRepairService } from "../services/repairService";
 import { createSubscriberService } from "../services/subscriberService";
 import {
   getAdminUserRepository,
@@ -16,6 +17,7 @@ import {
   getSpecRepository,
   getReviewRepository,
   getTradeinRepository,
+  getRepairRequestRepository,
   getSubscriberRepository,
 } from "./providers";
 
@@ -81,6 +83,14 @@ export function getTradeinService() {
     tradeinService = createTradeinService(getTradeinRepository());
   }
   return tradeinService;
+}
+
+let repairService: ReturnType<typeof createRepairService> | undefined;
+export function getRepairService() {
+  if (!repairService) {
+    repairService = createRepairService(getRepairRequestRepository());
+  }
+  return repairService;
 }
 
 let subscriberService: ReturnType<typeof createSubscriberService> | undefined;

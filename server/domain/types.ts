@@ -150,6 +150,29 @@ export type NewTradeinInput = {
   notes?: string | null;
 };
 
+export type RepairRequest = {
+  id: string;
+  customerName: string;
+  phone: string;
+  email: string | null;
+  deviceName: string;
+  deviceType: string;
+  issueDescription: string;
+  status: 'pending' | 'reviewed' | 'quoted' | 'completed';
+  adminNote: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type NewRepairRequestInput = {
+  customerName: string;
+  phone: string;
+  email?: string | null;
+  deviceName: string;
+  deviceType: string;
+  issueDescription: string;
+};
+
 export type Subscriber = {
   id: string;
   email: string;

@@ -1,7 +1,9 @@
 import type { GetServerSideProps, NextPage } from "next";
 import ProductCard from "../components/ProductCard";
 import Header from "../components/Header";
-import { Fragment, useState, useEffect, useContext } from "react";
+import PageHero from "../components/PageHero";
+import TabPills, { Tab } from "../components/TabPills";
+import { Fragment, useState, useEffect, useContext, useMemo } from "react";
 import Spinner from "../components/Spinner";
 import Head from "next/head";
 import CartContext from "../components/context/CartContext";
@@ -9,29 +11,47 @@ import { Slide } from "@mui/material";
 import { Popover, Transition } from "@headlessui/react";
 import { SearchIcon, AdjustmentsIcon } from "@heroicons/react/outline";
 import { getCatalogService, getCategoryService } from "../server/config/services";
-import { Category, CategoryWithChildren, Product } from "../server/domain/types";
+import { CategoryWithChildren, Product } from "../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { category: categorySlug } = context.query;
   const categoryService = getCategoryService();
 
-  const selectedCategory =
-    typeof categorySlug === "string" ? await categoryService.getBySlug(categorySlug) : null;
-
-  const categoryIds = selectedCategory
-    ? await categoryService.resolveFilterIds(selectedCategory.id)
-    : undefined;
-
   const [products, navTree] = await Promise.all([
-    getCatalogService().listActiveProducts(categoryIds),
+    getCatalogService().listActiveProducts(),
     categoryService.getNavTree(),
   ]);
+
+  const filteredTree = navTree.filter((d) => d.slug !== "other");
+
+  // A header link may point at a department slug directly, or at one of its
+  // child models — either way we resolve it down to the owning department tab.
+  // A model-specific link also pre-fills the search box with that model's name,
+  // so the grid narrows to it without needing a second tier of tabs.
+  let initialTab = "all";
+  let initialSearch = "";
+  if (typeof categorySlug === "string") {
+    const directDept = filteredTree.find((d) => d.slug === categorySlug);
+    let parentDept: CategoryWithChildren | undefined;
+    let matchedModel: CategoryWithChildren["children"][number] | undefined;
+    for (const dept of filteredTree) {
+      const model = dept.children.find((c) => c.slug === categorySlug);
+      if (model) {
+        parentDept = dept;
+        matchedModel = model;
+        break;
+      }
+    }
+    initialTab = directDept?.slug ?? parentDept?.slug ?? "all";
+    initialSearch = matchedModel?.name ?? "";
+  }
 
   return {
     props: {
       products: JSON.parse(JSON.stringify(products)),
-      navTree: JSON.parse(JSON.stringify(navTree.filter((d) => d.slug !== "other"))),
-      selectedCategory: selectedCategory ? JSON.parse(JSON.stringify(selectedCategory)) : null,
+      navTree: JSON.parse(JSON.stringify(filteredTree)),
+      initialTab,
+      initialSearch,
     },
   };
 };
@@ -39,7 +59,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 type Props = {
   products: Product[];
   navTree: CategoryWithChildren[];
-  selectedCategory: Category | null;
+  initialTab: string;
+  initialSearch: string;
 };
 
 interface Option {
@@ -47,8 +68,9 @@ interface Option {
   label: string;
 }
 
-const StorePage: NextPage<Props> = ({ products, navTree, selectedCategory }) => {
-  const [search, setSearch] = useState("");
+const StorePage: NextPage<Props> = ({ products, navTree, initialTab, initialSearch }) => {
+  const [search, setSearch] = useState(initialSearch);
+  const [selectedTab, setSelectedTab] = useState(initialTab);
   const [selectedOption, setSelectedOption] = useState<Option | null>({
     value: "new",
     label: "Sort By Addition Date",
@@ -91,10 +113,27 @@ const StorePage: NextPage<Props> = ({ products, navTree, selectedCategory }) => 
     setHideAlert(false);
   };
 
+  const tabs: Tab[] = useMemo(() => {
+    const departmentTabs = navTree
+      .map((dept) => {
+        const deptIds = new Set([dept.id, ...dept.children.map((c) => c.id)]);
+        const count = products.filter((p) => p.category && deptIds.has(p.category.id)).length;
+        return { label: dept.name, value: dept.slug, count };
+      })
+      .filter((tab) => tab.count > 0);
+
+    return [{ label: "All", value: "all", count: products.length }, ...departmentTabs];
+  }, [navTree, products]);
+
+  const selectedDept = navTree.find((d) => d.slug === selectedTab);
+  const selectedDeptIds = selectedDept
+    ? new Set([selectedDept.id, ...selectedDept.children.map((c) => c.id)])
+    : null;
+
   const sortedProducts = (): Product[] => {
-    const items = [...products].filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const items = [...products]
+      .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+      .filter((p) => !selectedDeptIds || (p.category && selectedDeptIds.has(p.category.id)));
 
     switch (selectedOption?.value) {
       case "highToLow":
@@ -119,13 +158,19 @@ const StorePage: NextPage<Props> = ({ products, navTree, selectedCategory }) => 
         <title>Shop — Apple Store Mbarara</title>
       </Head>
       <main className="bg-gray-100 min-h-screen">
-        <Header navTree={navTree} />
+        <Header />
+
+        <PageHero
+          eyebrow="Shop"
+          title="Find your next Apple device."
+          subtitle="Genuine products, fair pricing, and fast delivery across Mbarara."
+          pills={["Genuine & Sealed", "Warranty Included", "WhatsApp Support"]}
+        />
+
         <div className="max-w-5xl mx-auto py-8 px-2 sm:px-4">
-          {selectedCategory && (
-            <h1 className="text-2xl font-semibold text-gray-900 px-6 sm:px-8 lg:px-0 mb-4">
-              {selectedCategory.name}
-            </h1>
-          )}
+          <div className="px-2 sm:px-4 lg:px-0 mb-5">
+            <TabPills tabs={tabs} active={selectedTab} onChange={setSelectedTab} />
+          </div>
           <div className="px-2 sm:px-4 lg:px-0">
             <div className="flex items-center border border-gray-300 rounded-lg bg-white shadow-sm">
               <SearchIcon className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" />
@@ -177,8 +222,8 @@ const StorePage: NextPage<Props> = ({ products, navTree, selectedCategory }) => 
             <p className="text-center text-gray-500 mt-12">
               {search
                 ? `No products match "${search}".`
-                : selectedCategory
-                ? `No items currently available under ${selectedCategory.name}.`
+                : selectedDept
+                ? `No items currently available under ${selectedDept.name}.`
                 : "No products found."}
             </p>
           )}

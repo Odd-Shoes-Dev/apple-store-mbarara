@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { requireAdminPage } from "../../lib/adminAuth";
 import Spinner from "../../components/Spinner";
-import { TradeinRequest } from "../../server/domain/types";
+import { RepairRequest } from "../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const redirect = await requireAdminPage(context);
@@ -12,24 +12,31 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return { props: {} };
 };
 
-const STATUS_COLORS: Record<TradeinRequest['status'], string> = {
+const STATUS_COLORS: Record<RepairRequest['status'], string> = {
   pending: "bg-amber-100 text-amber-700",
   reviewed: "bg-blue-100 text-blue-700",
-  accepted: "bg-teal-100 text-teal-700",
-  rejected: "bg-rose-100 text-rose-700",
+  quoted: "bg-purple-100 text-purple-700",
+  completed: "bg-teal-100 text-teal-700",
 };
 
-const AdminTradein: NextPage = () => {
-  const [requests, setRequests] = useState<TradeinRequest[]>([]);
+const DEVICE_TYPE_LABELS: Record<string, string> = {
+  iphone: "iPhone",
+  macbook: "MacBook",
+  ipad: "iPad",
+  apple_watch: "Apple Watch",
+};
+
+const AdminRepair: NextPage = () => {
+  const [requests, setRequests] = useState<RepairRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<TradeinRequest | null>(null);
+  const [selected, setSelected] = useState<RepairRequest | null>(null);
   const [adminNote, setAdminNote] = useState("");
-  const [status, setStatus] = useState<TradeinRequest['status']>("pending");
+  const [status, setStatus] = useState<RepairRequest['status']>("pending");
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/trade-in");
+    const res = await fetch("/api/admin/repair");
     const data = await res.json();
     setRequests(data.requests ?? []);
     setLoading(false);
@@ -37,7 +44,7 @@ const AdminTradein: NextPage = () => {
 
   useEffect(() => { load(); }, []);
 
-  const openDetail = (r: TradeinRequest) => {
+  const openDetail = (r: RepairRequest) => {
     setSelected(r);
     setStatus(r.status);
     setAdminNote(r.adminNote ?? "");
@@ -46,7 +53,7 @@ const AdminTradein: NextPage = () => {
   const save = async () => {
     if (!selected) return;
     setSaving(true);
-    await fetch(`/api/admin/trade-in/${selected.id}`, {
+    await fetch(`/api/admin/repair/${selected.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status, adminNote: adminNote || null }),
@@ -58,43 +65,41 @@ const AdminTradein: NextPage = () => {
 
   return (
     <>
-      <Head><title>Admin | Trade-in</title></Head>
+      <Head><title>Admin | Repair Requests</title></Head>
       <div className="min-h-screen bg-gray-100">
-        <nav className="bg-white border-b px-6 py-3 flex items-center gap-6 text-sm">
+        <nav className="bg-white border-b px-6 py-3 flex items-center gap-6 text-sm flex-wrap">
           <Link href="/admin/products" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Products</a></Link>
           <Link href="/admin/hero" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Hero</a></Link>
           <Link href="/admin/reviews" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Reviews</a></Link>
-          <Link href="/admin/trade-in" passHref><a className="font-semibold text-gray-900 underline">Trade-in</a></Link>
-          <Link href="/admin/repair" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Repair</a></Link>
+          <Link href="/admin/trade-in" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Trade-in</a></Link>
+          <Link href="/admin/repair" passHref><a className="font-semibold text-gray-900 underline">Repair</a></Link>
           <Link href="/admin/subscribers" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Subscribers</a></Link>
         </nav>
         <div className="max-w-5xl mx-auto px-6 py-8">
-          <h1 className="text-xl font-semibold text-gray-900 mb-6">Trade-in Requests</h1>
+          <h1 className="text-xl font-semibold text-gray-900 mb-6">Repair Requests</h1>
 
-          {/* Detail modal */}
           {selected && (
             <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
               <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
                 <h2 className="text-lg font-semibold mb-4">{selected.customerName}</h2>
                 <dl className="text-sm space-y-2 text-gray-700">
-                  <div><dt className="font-medium inline">Device: </dt><dd className="inline">{selected.deviceName}</dd></div>
-                  <div><dt className="font-medium inline">Condition: </dt><dd className="inline capitalize">{selected.deviceCondition}</dd></div>
+                  <div><dt className="font-medium inline">Device: </dt><dd className="inline">{selected.deviceName} ({DEVICE_TYPE_LABELS[selected.deviceType] ?? selected.deviceType})</dd></div>
+                  <div><dt className="font-medium inline">Issue: </dt><dd className="inline">{selected.issueDescription}</dd></div>
                   <div><dt className="font-medium inline">Phone: </dt><dd className="inline">{selected.phone}</dd></div>
                   {selected.email && <div><dt className="font-medium inline">Email: </dt><dd className="inline">{selected.email}</dd></div>}
-                  {selected.notes && <div><dt className="font-medium inline">Notes: </dt><dd className="inline">{selected.notes}</dd></div>}
                 </dl>
                 <div className="mt-4 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select value={status} onChange={(e) => setStatus(e.target.value as TradeinRequest['status'])} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                      {(["pending","reviewed","accepted","rejected"] as TradeinRequest['status'][]).map((s) => (
+                    <select value={status} onChange={(e) => setStatus(e.target.value as RepairRequest['status'])} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                      {(["pending","reviewed","quoted","completed"] as RepairRequest['status'][]).map((s) => (
                         <option key={s} value={s} className="capitalize">{s}</option>
                       ))}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Admin note</label>
-                    <textarea rows={3} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" />
+                    <textarea rows={3} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="e.g. quoted price, parts needed..." />
                   </div>
                   <div className="flex gap-2 justify-end">
                     <button onClick={() => setSelected(null)} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">Cancel</button>
@@ -118,7 +123,7 @@ const AdminTradein: NextPage = () => {
                   <tr>
                     <th className="px-4 py-3">Customer</th>
                     <th className="px-4 py-3">Device</th>
-                    <th className="px-4 py-3">Condition</th>
+                    <th className="px-4 py-3">Issue</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3"></th>
@@ -129,7 +134,7 @@ const AdminTradein: NextPage = () => {
                     <tr key={r.id}>
                       <td className="px-4 py-3 font-medium text-gray-900">{r.customerName}</td>
                       <td className="px-4 py-3 text-gray-600">{r.deviceName}</td>
-                      <td className="px-4 py-3 text-gray-600 capitalize">{r.deviceCondition}</td>
+                      <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{r.issueDescription}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_COLORS[r.status]}`}>{r.status}</span>
                       </td>
@@ -149,4 +154,4 @@ const AdminTradein: NextPage = () => {
   );
 };
 
-export default AdminTradein;
+export default AdminRepair;

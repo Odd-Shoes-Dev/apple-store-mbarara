@@ -146,7 +146,7 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
         strategy="lazyOnload"
       />
 
-      <Header navTree={navTree} />
+      <Header />
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       {heroSlides.length > 0 ? (

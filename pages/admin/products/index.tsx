@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { requireAdminPage } from "../../../lib/adminAuth";
+import Spinner from "../../../components/Spinner";
 import { Category, Product } from "../../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -165,7 +166,11 @@ const AdminProducts: NextPage = () => {
             {!loading && products.length === 0 && (
               <p className="text-center text-sm text-gray-500 py-8">No products found.</p>
             )}
-            {loading && <p className="text-center text-sm text-gray-500 py-8">Loading...</p>}
+            {loading && (
+              <div className="flex justify-center py-12">
+                <Spinner />
+              </div>
+            )}
           </div>
         </main>
       </div>

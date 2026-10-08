@@ -1,21 +1,11 @@
-import type { GetServerSideProps, NextPage } from "next";
+import type { NextPage } from "next";
 import Head from "next/head";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { getCategoryService } from "../server/config/services";
-import { CategoryWithChildren } from "../server/domain/types";
+import PageHero from "../components/PageHero";
 
-type Props = { navTree: CategoryWithChildren[] };
-
-export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  const navTree = await getCategoryService().getNavTree();
-  return {
-    props: { navTree: JSON.parse(JSON.stringify(navTree.filter((d) => d.slug !== "other"))) },
-  };
-};
-
-const TradeInPage: NextPage<Props> = ({ navTree }) => {
+const TradeInPage: NextPage = () => {
   const [form, setForm] = useState({
     customerName: "",
     phone: "",
@@ -55,14 +45,17 @@ const TradeInPage: NextPage<Props> = ({ navTree }) => {
         <title>Trade-in — Apple Store Mbarara</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Header navTree={navTree} />
+      <Header />
+
+      <PageHero
+        eyebrow="Trade-in"
+        title="Turn your old device into credit."
+        subtitle="Swap your old iPhone, Mac, iPad or Watch toward something new. We review every request and get back to you with an offer."
+        pills={["Free inspection", "Fair value", "Fast response"]}
+      />
+
       <main className="min-h-screen bg-gray-50 py-16 px-4">
         <div className="max-w-lg mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Trade-in / Swap</h1>
-          <p className="text-gray-500 mb-8">
-            Swap your old device for something new. Fill in the details and we will get back to you with an offer.
-          </p>
-
           {done ? (
             <div className="bg-teal-50 border border-teal-200 rounded-xl p-8 text-center">
               <svg className="w-12 h-12 text-teal-500 mx-auto mb-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

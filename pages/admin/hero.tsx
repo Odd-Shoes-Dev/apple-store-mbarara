@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState, ChangeEvent } from "react";
 import { requireAdminPage } from "../../lib/adminAuth";
+import Spinner from "../../components/Spinner";
 import { HeroSlide } from "../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -148,6 +149,7 @@ const AdminHero: NextPage = () => {
           <Link href="/admin/hero" passHref><a className="font-semibold text-gray-900 underline">Hero</a></Link>
           <Link href="/admin/reviews" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Reviews</a></Link>
           <Link href="/admin/trade-in" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Trade-in</a></Link>
+          <Link href="/admin/repair" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Repair</a></Link>
           <Link href="/admin/subscribers" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Subscribers</a></Link>
         </nav>
 
@@ -244,7 +246,9 @@ const AdminHero: NextPage = () => {
 
           {/* Slide list */}
           {loading ? (
-            <p className="text-gray-500">Loading…</p>
+            <div className="flex justify-center py-12">
+              <Spinner />
+            </div>
           ) : slides.length === 0 ? (
             <div className="bg-white rounded-xl p-10 text-center text-gray-400 text-sm">
               No slides yet. Add one to replace the default hero.
