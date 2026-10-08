@@ -125,6 +125,11 @@ export class PgProductRepository implements ProductRepository {
       conditions.push(`p.is_featured = $${params.length}`);
     }
 
+    if (filter.newArrival !== undefined) {
+      params.push(filter.newArrival);
+      conditions.push(`p.is_new_arrival = $${params.length}`);
+    }
+
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
     const result = await this.db.query<ProductRow>(

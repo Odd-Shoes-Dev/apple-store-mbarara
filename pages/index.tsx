@@ -6,6 +6,7 @@ import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
+import NewArrivalCard from "../components/NewArrivalCard";
 import { getCatalogService, getCategoryService, getHeroService } from "../server/config/services";
 import { CategoryWithChildren, HeroSlide, Product } from "../server/domain/types";
 import HeroCarousel from "../components/HeroCarousel";
@@ -19,14 +20,17 @@ type Props = {
   navTree: CategoryWithChildren[];
   sections: DepartmentSection[];
   heroSlides: HeroSlide[];
+  newArrivals: Product[];
 };
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
   const categoryService = getCategoryService();
-  const [navTree, featuredProducts, heroSlides] = await Promise.all([
+  const catalogService = getCatalogService();
+  const [navTree, featuredProducts, heroSlides, newArrivals] = await Promise.all([
     categoryService.getNavTree(),
-    getCatalogService().listFeaturedProducts(),
+    catalogService.listFeaturedProducts(),
     getHeroService().listActive(),
+    catalogService.listNewArrivals(),
   ]);
 
   const filteredTree = navTree.filter((d) => d.slug !== "other");
@@ -46,6 +50,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
       navTree: JSON.parse(JSON.stringify(filteredTree)),
       sections: JSON.parse(JSON.stringify(sections)),
       heroSlides: JSON.parse(JSON.stringify(heroSlides)),
+      newArrivals: JSON.parse(JSON.stringify(newArrivals)),
     },
   };
 };
@@ -113,7 +118,7 @@ const trustItems = [
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 
-const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides }) => {
+const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArrivals }) => {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const [email, setEmail] = useState("");
   const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -211,6 +216,34 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides }) => {
                   Ask a Specialist
                 </a>
               )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── WHAT'S NEW ───────────────────────────────────────────── */}
+      {newArrivals.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
+              <h2 className="text-2xl font-bold text-gray-900" style={{ letterSpacing: "-0.02em" }}>
+                What&apos;s New
+              </h2>
+              <Link href="/store" passHref>
+                <a className="text-sm font-medium flex-shrink-0" style={{ color: "#c9a15a" }}>
+                  See all →
+                </a>
+              </Link>
+            </div>
+            <div
+              className="flex gap-4 overflow-x-auto pb-4 px-5 lg:px-0 snap-x snap-mandatory scroll-smooth"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {newArrivals.map((p) => (
+                <div key={p.id} className="snap-start">
+                  <NewArrivalCard product={p} />
+                </div>
+              ))}
             </div>
           </div>
         </section>

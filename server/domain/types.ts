@@ -78,6 +78,7 @@ export type ProductListFilter = {
   categoryIds?: string[];
   active?: boolean;
   featured?: boolean;
+  newArrival?: boolean;
 };
 
 export type HeroSlide = {
