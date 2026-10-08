@@ -226,7 +226,10 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
         <section className="py-16 bg-gray-50">
           <Reveal className="max-w-5xl mx-auto">
             <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
-              <h2 className="text-2xl font-bold text-gray-900" style={{ letterSpacing: "-0.02em" }}>
+              <h2
+                className="font-bold text-gray-900"
+                style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }}
+              >
                 What&apos;s New
               </h2>
               <Link href="/store" passHref>
@@ -260,8 +263,12 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
               <Reveal className="max-w-5xl mx-auto">
                 <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
                   <h2
-                    className="text-2xl font-bold text-gray-900"
-                    style={{ letterSpacing: "-0.02em" }}
+                    className="font-bold text-gray-900"
+                    style={
+                      department.slug === "iphone"
+                        ? { fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }
+                        : { fontSize: "1.5rem", letterSpacing: "-0.02em" }
+                    }
                   >
                     {department.name}
                   </h2>
@@ -351,10 +358,13 @@ const LandingPage: NextPage<Props> = ({ navTree, sections, heroSlides, newArriva
       <section className="py-20 bg-gray-50 border-t border-gray-200">
         <Reveal className="max-w-5xl mx-auto px-5 lg:px-0">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-900" style={{ letterSpacing: "-0.02em" }}>
+            <h2
+              className="font-bold text-gray-900"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }}
+            >
               Why buy from us
             </h2>
-            <p className="text-gray-500 mt-2 text-sm">
+            <p className="text-gray-500 mt-3 text-base">
               Everything a big-city Apple store offers — now local.
             </p>
           </div>

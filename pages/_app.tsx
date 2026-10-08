@@ -5,7 +5,8 @@ import CartContext, {
 } from "../components/context/CartContext";
 import Footer from "../components/Footer";
 import WatchShowcase from "../components/WatchShowcase";
-import { useState, ReactElement } from "react";
+import Spinner from "../components/Spinner";
+import { useState, useEffect, ReactElement } from "react";
 import { useRouter } from "next/router";
 import _ from "lodash";
 import { Alert, Slide } from "@mui/material";
@@ -19,6 +20,22 @@ function MyApp({ Component, pageProps }: AppProps) {
   const [total, setTotal] = useState<number>(0);
   const [alert, setAlert] = useState<ReactElement | null>(null);
   const [alertVisible, setAlertVisible] = useState<boolean | undefined>(false);
+  const [routeLoading, setRouteLoading] = useState(false);
+
+  useEffect(() => {
+    const start = () => setRouteLoading(true);
+    const stop = () => setRouteLoading(false);
+
+    router.events.on("routeChangeStart", start);
+    router.events.on("routeChangeComplete", stop);
+    router.events.on("routeChangeError", stop);
+
+    return () => {
+      router.events.off("routeChangeStart", start);
+      router.events.off("routeChangeComplete", stop);
+      router.events.off("routeChangeError", stop);
+    };
+  }, [router]);
 
   function playSound(sound: string) {
     new Audio(`/sounds/${sound}`).play();
@@ -86,6 +103,11 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <CartContext.Provider value={cartContext}>
+      {routeLoading && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/70 backdrop-blur-sm">
+          <Spinner />
+        </div>
+      )}
       <Component {...pageProps} />
       {showFooter && <WatchShowcase />}
       {showFooter && <Footer />}
