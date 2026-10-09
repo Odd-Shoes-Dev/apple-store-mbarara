@@ -99,47 +99,74 @@ async function fetchImagesFor(db: Pool, productIds: string[]): Promise<ProductIm
   return result.rows;
 }
 
+const SORT_CLAUSES: Record<NonNullable<ProductListFilter["sort"]>, string> = {
+  newest: "p.created_at DESC",
+  priceAsc: "p.price_cents ASC",
+  priceDesc: "p.price_cents DESC",
+};
+
+function buildWhere(filter: ProductListFilter): { where: string; params: unknown[] } {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (filter.active !== undefined) {
+    params.push(filter.active);
+    conditions.push(`p.active = $${params.length}`);
+  }
+
+  if (filter.categoryIds && filter.categoryIds.length > 0) {
+    params.push(filter.categoryIds);
+    conditions.push(`p.category_id = ANY($${params.length})`);
+  }
+
+  if (filter.search) {
+    params.push(`%${filter.search}%`);
+    conditions.push(`p.name ILIKE $${params.length}`);
+  }
+
+  if (filter.featured !== undefined) {
+    params.push(filter.featured);
+    conditions.push(`p.is_featured = $${params.length}`);
+  }
+
+  if (filter.newArrival !== undefined) {
+    params.push(filter.newArrival);
+    conditions.push(`p.is_new_arrival = $${params.length}`);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  return { where, params };
+}
+
 export class PgProductRepository implements ProductRepository {
   constructor(private readonly db: Pool) {}
 
   async list(filter: ProductListFilter): Promise<Product[]> {
-    const conditions: string[] = [];
-    const params: unknown[] = [];
+    const { where, params } = buildWhere(filter);
+    const orderBy = SORT_CLAUSES[filter.sort ?? "newest"];
 
-    if (filter.active !== undefined) {
-      params.push(filter.active);
-      conditions.push(`p.active = $${params.length}`);
+    let query = `${PRODUCT_SELECT} ${where} ORDER BY ${orderBy}`;
+
+    if (filter.limit !== undefined) {
+      params.push(filter.limit);
+      query += ` LIMIT $${params.length}`;
     }
 
-    if (filter.categoryIds && filter.categoryIds.length > 0) {
-      params.push(filter.categoryIds);
-      conditions.push(`p.category_id = ANY($${params.length})`);
+    if (filter.offset !== undefined) {
+      params.push(filter.offset);
+      query += ` OFFSET $${params.length}`;
     }
 
-    if (filter.search) {
-      params.push(`%${filter.search}%`);
-      conditions.push(`p.name ILIKE $${params.length}`);
-    }
-
-    if (filter.featured !== undefined) {
-      params.push(filter.featured);
-      conditions.push(`p.is_featured = $${params.length}`);
-    }
-
-    if (filter.newArrival !== undefined) {
-      params.push(filter.newArrival);
-      conditions.push(`p.is_new_arrival = $${params.length}`);
-    }
-
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-
-    const result = await this.db.query<ProductRow>(
-      `${PRODUCT_SELECT} ${where} ORDER BY p.created_at DESC`,
-      params
-    );
+    const result = await this.db.query<ProductRow>(query, params);
 
     const images = await fetchImagesFor(this.db, result.rows.map((row) => row.id));
     return result.rows.map((row) => mapProduct(row, images));
+  }
+
+  async count(filter: ProductListFilter): Promise<number> {
+    const { where, params } = buildWhere(filter);
+    const result = await this.db.query<{ count: string }>(`SELECT COUNT(*) FROM products p ${where}`, params);
+    return parseInt(result.rows[0].count, 10);
   }
 
   async getById(id: string): Promise<Product | null> {

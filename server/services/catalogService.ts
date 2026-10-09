@@ -3,6 +3,7 @@ import {
   NewProductInput,
   Product,
   ProductListFilter,
+  ProductPage,
   UpdateProductInput,
 } from "../domain/types";
 
@@ -22,6 +23,19 @@ export function createCatalogService(productRepository: ProductRepository) {
 
     listAllProducts(filter: ProductListFilter): Promise<Product[]> {
       return productRepository.list(filter);
+    },
+
+    async listProductsPage(filter: ProductListFilter, page: number, pageSize: number): Promise<ProductPage> {
+      const offset = (page - 1) * pageSize;
+      const [products, total] = await Promise.all([
+        productRepository.list({ ...filter, limit: pageSize, offset }),
+        productRepository.count(filter),
+      ]);
+      return { products, total, page, pageSize };
+    },
+
+    countActiveProducts(categoryIds?: string[]): Promise<number> {
+      return productRepository.count({ active: true, categoryIds });
     },
 
     getActiveProductById(id: string): Promise<Product | null> {

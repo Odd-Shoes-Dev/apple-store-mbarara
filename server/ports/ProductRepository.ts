@@ -7,6 +7,7 @@ import {
 
 export interface ProductRepository {
   list(filter: ProductListFilter): Promise<Product[]>;
+  count(filter: ProductListFilter): Promise<number>;
   getById(id: string): Promise<Product | null>;
   getManyByIds(ids: string[]): Promise<Product[]>;
   create(input: NewProductInput): Promise<Product>;

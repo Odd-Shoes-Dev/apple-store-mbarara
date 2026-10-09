@@ -96,12 +96,24 @@ export type NewProductInput = {
 
 export type UpdateProductInput = Partial<NewProductInput>;
 
+export type ProductSort = 'newest' | 'priceAsc' | 'priceDesc';
+
 export type ProductListFilter = {
   search?: string;
   categoryIds?: string[];
   active?: boolean;
   featured?: boolean;
   newArrival?: boolean;
+  sort?: ProductSort;
+  limit?: number;
+  offset?: number;
+};
+
+export type ProductPage = {
+  products: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
 };
 
 export type HeroSlide = {

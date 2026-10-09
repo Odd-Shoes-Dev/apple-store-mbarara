@@ -10,15 +10,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const catalogService = getCatalogService();
 
   if (req.method === "GET") {
-    const { search, categoryId, active } = req.query;
+    const { search, categoryId, active, page, pageSize } = req.query;
 
-    const products = await catalogService.listAllProducts({
-      search: typeof search === "string" && search.length > 0 ? search : undefined,
-      categoryIds: typeof categoryId === "string" && categoryId.length > 0 ? [categoryId] : undefined,
-      active: active === "true" ? true : active === "false" ? false : undefined,
-    });
+    const parsedPage = Math.max(1, parseInt(typeof page === "string" ? page : "1", 10) || 1);
+    const parsedPageSize = Math.min(
+      100,
+      Math.max(1, parseInt(typeof pageSize === "string" ? pageSize : "20", 10) || 20)
+    );
 
-    return res.status(200).json({ products });
+    const result = await catalogService.listProductsPage(
+      {
+        search: typeof search === "string" && search.length > 0 ? search : undefined,
+        categoryIds: typeof categoryId === "string" && categoryId.length > 0 ? [categoryId] : undefined,
+        active: active === "true" ? true : active === "false" ? false : undefined,
+      },
+      parsedPage,
+      parsedPageSize
+    );
+
+    return res.status(200).json(result);
   }
 
   if (req.method === "POST") {

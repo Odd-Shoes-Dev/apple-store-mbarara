@@ -3,7 +3,7 @@ import ProductCard from "../components/ProductCard";
 import Header from "../components/Header";
 import PageHero from "../components/PageHero";
 import TabPills, { Tab } from "../components/TabPills";
-import { Fragment, useState, useEffect, useContext, useMemo } from "react";
+import { Fragment, useState, useEffect, useRef, useContext } from "react";
 import Spinner from "../components/Spinner";
 import Head from "next/head";
 import CartContext from "../components/context/CartContext";
@@ -11,17 +11,16 @@ import { Slide } from "@mui/material";
 import { Popover, Transition } from "@headlessui/react";
 import { SearchIcon, AdjustmentsIcon } from "@heroicons/react/outline";
 import { getCatalogService, getCategoryService } from "../server/config/services";
-import { CategoryWithChildren, Product } from "../server/domain/types";
+import { CategoryWithChildren, Product, ProductSort } from "../server/domain/types";
+
+const PAGE_SIZE = 12;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { category: categorySlug } = context.query;
   const categoryService = getCategoryService();
+  const catalogService = getCatalogService();
 
-  const [products, navTree] = await Promise.all([
-    getCatalogService().listActiveProducts(),
-    categoryService.getNavTree(),
-  ]);
-
+  const navTree = await categoryService.getNavTree();
   const filteredTree = navTree.filter((d) => d.slug !== "other");
 
   // A header link may point at a department slug directly, or at one of its
@@ -46,10 +45,34 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     initialSearch = matchedModel?.name ?? "";
   }
 
+  const selectedDept = filteredTree.find((d) => d.slug === initialTab);
+  const selectedDeptIds = selectedDept
+    ? [selectedDept.id, ...selectedDept.children.map((c) => c.id)]
+    : undefined;
+
+  const [firstPage, allCount, deptCounts] = await Promise.all([
+    catalogService.listProductsPage(
+      { active: true, search: initialSearch || undefined, categoryIds: selectedDeptIds, sort: "newest" },
+      1,
+      PAGE_SIZE
+    ),
+    catalogService.countActiveProducts(),
+    Promise.all(
+      filteredTree.map((dept) => catalogService.countActiveProducts([dept.id, ...dept.children.map((c) => c.id)]))
+    ),
+  ]);
+
+  const tabs: Tab[] = [
+    { label: "All", value: "all", count: allCount },
+    ...filteredTree.map((dept, i) => ({ label: dept.name, value: dept.slug, count: deptCounts[i] })),
+  ].filter((tab) => tab.value === "all" || (tab.count ?? 0) > 0);
+
   return {
     props: {
-      products: JSON.parse(JSON.stringify(products)),
+      initialProducts: JSON.parse(JSON.stringify(firstPage.products)),
+      initialTotal: firstPage.total,
       navTree: JSON.parse(JSON.stringify(filteredTree)),
+      tabs,
       initialTab,
       initialSearch,
     },
@@ -57,8 +80,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 type Props = {
-  products: Product[];
+  initialProducts: Product[];
+  initialTotal: number;
   navTree: CategoryWithChildren[];
+  tabs: Tab[];
   initialTab: string;
   initialSearch: string;
 };
@@ -68,8 +93,20 @@ interface Option {
   label: string;
 }
 
-const StorePage: NextPage<Props> = ({ products, navTree, initialTab, initialSearch }) => {
+function sortParamFor(value?: string): ProductSort {
+  switch (value) {
+    case "highToLow":
+      return "priceDesc";
+    case "lowToHigh":
+      return "priceAsc";
+    default:
+      return "newest";
+  }
+}
+
+const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, tabs, initialTab, initialSearch }) => {
   const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [selectedTab, setSelectedTab] = useState(initialTab);
   const [selectedOption, setSelectedOption] = useState<Option | null>({
     value: "new",
@@ -82,16 +119,78 @@ const StorePage: NextPage<Props> = ({ products, navTree, initialTab, initialSear
     { value: "lowToHigh", label: "Price: Low to High" },
   ];
 
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [total, setTotal] = useState(initialTotal);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const hasMore = products.length < total;
 
   const { alert = null, isAlertVisible } = useContext(CartContext);
   const [hideAlert, setHideAlert] = useState(false);
 
+  const categoryIdsFor = (tabValue: string): string[] | undefined => {
+    const dept = navTree.find((d) => d.slug === tabValue);
+    return dept ? [dept.id, ...dept.children.map((c) => c.id)] : undefined;
+  };
+
+  const fetchPage = async (pageToFetch: number, append: boolean) => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    const categoryIds = selectedTab !== "all" ? categoryIdsFor(selectedTab) : undefined;
+    if (categoryIds && categoryIds.length > 0) params.set("categoryIds", categoryIds.join(","));
+    params.set("sort", sortParamFor(selectedOption?.value));
+    params.set("page", String(pageToFetch));
+    params.set("pageSize", String(PAGE_SIZE));
+
+    if (append) setLoadingMore(true);
+    else setLoading(true);
+
+    try {
+      const res = await fetch(`/api/products?${params.toString()}`);
+      const data = await res.json();
+      setProducts((prev) => (append ? [...prev, ...data.products] : data.products));
+      setTotal(data.total ?? 0);
+      setPage(pageToFetch);
+    } finally {
+      if (append) setLoadingMore(false);
+      else setLoading(false);
+    }
+  };
+
+  // Debounce the search box before it drives a fetch.
   useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
-  }, []);
+    const t = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const didMountRef = useRef(false);
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    fetchPage(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTab, selectedOption, debouncedSearch]);
+
+  // Infinite scroll: load the next page once the sentinel comes into view.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          fetchPage(page + 1, true);
+        }
+      },
+      { rootMargin: "600px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, hasMore, loadingMore, loading]);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout | null = null;
@@ -113,44 +212,7 @@ const StorePage: NextPage<Props> = ({ products, navTree, initialTab, initialSear
     setHideAlert(false);
   };
 
-  const tabs: Tab[] = useMemo(() => {
-    const departmentTabs = navTree
-      .map((dept) => {
-        const deptIds = new Set([dept.id, ...dept.children.map((c) => c.id)]);
-        const count = products.filter((p) => p.category && deptIds.has(p.category.id)).length;
-        return { label: dept.name, value: dept.slug, count };
-      })
-      .filter((tab) => tab.count > 0);
-
-    return [{ label: "All", value: "all", count: products.length }, ...departmentTabs];
-  }, [navTree, products]);
-
   const selectedDept = navTree.find((d) => d.slug === selectedTab);
-  const selectedDeptIds = selectedDept
-    ? new Set([selectedDept.id, ...selectedDept.children.map((c) => c.id)])
-    : null;
-
-  const sortedProducts = (): Product[] => {
-    const items = [...products]
-      .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
-      .filter((p) => !selectedDeptIds || (p.category && selectedDeptIds.has(p.category.id)));
-
-    switch (selectedOption?.value) {
-      case "highToLow":
-        items.sort((a, b) => b.priceCents - a.priceCents);
-        break;
-      case "lowToHigh":
-        items.sort((a, b) => a.priceCents - b.priceCents);
-        break;
-      case "new":
-        items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      default:
-        break;
-    }
-
-    return items;
-  };
 
   return (
     <>
@@ -218,20 +280,26 @@ const StorePage: NextPage<Props> = ({ products, navTree, initialTab, initialSear
               </Popover>
             </div>
           </div>
-          {!loading && sortedProducts().length === 0 && (
+          {!loading && products.length === 0 && (
             <p className="text-center text-gray-500 mt-12">
-              {search
-                ? `No products match "${search}".`
+              {debouncedSearch
+                ? `No products match "${debouncedSearch}".`
                 : selectedDept
                 ? `No items currently available under ${selectedDept.name}.`
                 : "No products found."}
             </p>
           )}
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {!loading && sortedProducts().map((p) => (
+            {!loading && products.map((p) => (
               <ProductCard product={p} key={p.id} />
             ))}
           </div>
+          <div ref={sentinelRef} className="h-1" />
+          {loadingMore && (
+            <div className="flex justify-center py-8">
+              <Spinner />
+            </div>
+          )}
           <div
             className={`fixed z-999 top-0 left-0 w-full h-full flex items-center justify-center ${
               loading ? "visible" : "invisible"
