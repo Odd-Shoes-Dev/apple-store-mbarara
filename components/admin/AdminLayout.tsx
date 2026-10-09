@@ -58,6 +58,11 @@ const NAV_ITEMS = [
     href: "/admin/subscribers",
     icon: icon(<><path d="M4 4h16v16H4z" opacity="0" /><path d="M22 6l-10 7L2 6" /><rect x="2" y="4" width="20" height="16" rx="2" /></>),
   },
+  {
+    label: "Currency",
+    href: "/admin/currency",
+    icon: icon(<><circle cx="12" cy="12" r="9" /><path d="M9 8h3.5a2 2 0 010 4H9m0 0h4m-4 0v4m0-8V6" /></>),
+  },
 ];
 
 function isItemActive(pathname: string, href: string) {

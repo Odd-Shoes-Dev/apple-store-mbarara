@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { ProductRepository } from "../../../ports/ProductRepository";
 import {
+  Currency,
   NewProductInput,
   Product,
   ProductCondition,
@@ -14,7 +15,7 @@ type ProductRow = {
   slug: string;
   description: string;
   price_cents: number;
-  currency: string;
+  currency: Currency;
   category_id: string | null;
   active: boolean;
   is_featured: boolean;

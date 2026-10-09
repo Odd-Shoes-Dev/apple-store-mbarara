@@ -8,6 +8,7 @@ import { createReviewService } from "../services/reviewService";
 import { createTradeinService } from "../services/tradeinService";
 import { createRepairService } from "../services/repairService";
 import { createStoreGalleryService } from "../services/storeGalleryService";
+import { createExchangeRateService } from "../services/exchangeRateService";
 import { createSubscriberService } from "../services/subscriberService";
 import {
   getAdminUserRepository,
@@ -20,6 +21,8 @@ import {
   getTradeinRepository,
   getRepairRequestRepository,
   getStoreGalleryRepository,
+  getExchangeRateSettingsRepository,
+  getExchangeRateProvider,
   getSubscriberRepository,
 } from "./providers";
 
@@ -85,6 +88,14 @@ export function getTradeinService() {
     tradeinService = createTradeinService(getTradeinRepository());
   }
   return tradeinService;
+}
+
+let exchangeRateService: ReturnType<typeof createExchangeRateService> | undefined;
+export function getExchangeRateService() {
+  if (!exchangeRateService) {
+    exchangeRateService = createExchangeRateService(getExchangeRateSettingsRepository(), getExchangeRateProvider());
+  }
+  return exchangeRateService;
 }
 
 let storeGalleryService: ReturnType<typeof createStoreGalleryService> | undefined;

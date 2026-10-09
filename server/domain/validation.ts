@@ -11,7 +11,7 @@ export const newProductSchema = z.object({
   slug: z.string().min(1),
   description: z.string().min(1),
   priceCents: z.number().int().positive(),
-  currency: z.string().min(1).default("usd"),
+  currency: z.enum(["ugx", "usd"]).default("ugx"),
   categoryId: z.string().min(1),
   active: z.boolean().default(true),
   isFeatured: z.boolean().default(false),

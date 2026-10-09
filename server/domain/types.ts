@@ -32,13 +32,36 @@ export const CONDITION_LABELS: Record<ProductCondition, string> = {
   refurbished: 'Refurbished',
 };
 
+export type Currency = 'ugx' | 'usd';
+
+export const DEFAULT_CURRENCY: Currency = 'ugx';
+
+export const CURRENCY_LABELS: Record<Currency, string> = {
+  ugx: 'UGX',
+  usd: 'USD',
+};
+
+export type ExchangeRateMode = 'live' | 'manual';
+
+export type ExchangeRateSettings = {
+  mode: ExchangeRateMode;
+  manualRate: number | null;
+  cachedLiveRate: number | null;
+  cachedLiveRateFetchedAt: Date | null;
+};
+
+export type UpdateExchangeRateSettingsInput = {
+  mode?: ExchangeRateMode;
+  manualRate?: number | null;
+};
+
 export type Product = {
   id: string;
   name: string;
   slug: string;
   description: string;
   priceCents: number;
-  currency: string;
+  currency: Currency;
   category: Category | null;
   active: boolean;
   isFeatured: boolean;
@@ -58,7 +81,7 @@ export type NewProductInput = {
   slug: string;
   description: string;
   priceCents: number;
-  currency: string;
+  currency: Currency;
   categoryId: string;
   active: boolean;
   isFeatured: boolean;

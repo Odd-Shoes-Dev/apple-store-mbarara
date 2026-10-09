@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Category, CONDITION_LABELS, Product, ProductCondition, ProductSpec } from "../../server/domain/types";
+import { Category, CONDITION_LABELS, Currency, CURRENCY_LABELS, DEFAULT_CURRENCY, Product, ProductCondition, ProductSpec } from "../../server/domain/types";
 
 type ImageDraft = { url: string; key: string };
 
@@ -11,6 +11,7 @@ type Props = {
 type CategoryRow = Category & { parentName: string | null };
 
 const CONDITIONS: ProductCondition[] = ["brand_new", "used_uk", "used_local", "refurbished"];
+const CURRENCIES: Currency[] = ["ugx", "usd"];
 
 const ProductForm = ({ initial }: Props) => {
   const router = useRouter();
@@ -18,6 +19,7 @@ const ProductForm = ({ initial }: Props) => {
 
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [currency, setCurrency] = useState<Currency>(initial?.currency ?? DEFAULT_CURRENCY);
   const [price, setPrice] = useState(initial ? (initial.priceCents / 100).toString() : "");
   const [originalPrice, setOriginalPrice] = useState(
     initial?.originalPriceCents ? (initial.originalPriceCents / 100).toString() : ""
@@ -130,7 +132,7 @@ const ProductForm = ({ initial }: Props) => {
       description,
       priceCents,
       originalPriceCents,
-      currency: "usd",
+      currency,
       categoryId,
       active,
       isFeatured,
@@ -195,8 +197,20 @@ const ProductForm = ({ initial }: Props) => {
       </div>
 
       <div className="flex gap-4">
+        <div className="w-32">
+          <label className="block text-sm font-medium text-gray-700">Currency</label>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as Currency)}
+            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c} value={c}>{CURRENCY_LABELS[c]}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">Price (USD)</label>
+          <label className="block text-sm font-medium text-gray-700">Price</label>
           <input
             required
             type="number"

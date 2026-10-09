@@ -1,9 +1,9 @@
 import { FunctionComponent } from "react";
 import Link from "next/link";
 import { LazyLoadImage } from "react-lazy-load-image-component";
+import { useDisplayCurrency } from "./context/DisplayCurrencyContext";
 import {
   getProductPrice,
-  formatPrice,
   getProductImage,
   getProductName,
 } from "../utils/computed";
@@ -14,6 +14,7 @@ export type NewArrivalCardProps = {
 };
 
 const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => {
+  const { formatProductPrice } = useDisplayCurrency();
   const outOfStock = product.stockCount === 0;
   const isOnSale =
     product.originalPriceCents !== null &&
@@ -69,11 +70,11 @@ const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => 
           <div className="flex items-center justify-between mt-3">
             <div className="flex flex-col">
               <span className="text-gray-900 text-sm font-semibold">
-                {formatPrice(getProductPrice(product))}
+                {formatProductPrice(getProductPrice(product), product.currency)}
               </span>
               {isOnSale && product.originalPriceCents && (
                 <span className="text-xs text-gray-400 line-through">
-                  {formatPrice(product.originalPriceCents / 100)}
+                  {formatProductPrice(product.originalPriceCents / 100, product.currency)}
                 </span>
               )}
             </div>

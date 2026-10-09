@@ -9,13 +9,13 @@ import Header from "../../components/Header";
 import Reveal from "../../components/Reveal";
 import {
   getProductPrice,
-  formatPrice,
   getProductDescription,
   getProductImage,
   getProductName,
 } from "../../utils/computed";
 import { useContext, useState, useEffect } from "react";
 import CartContext from "../../components/context/CartContext";
+import { useDisplayCurrency } from "../../components/context/DisplayCurrencyContext";
 import { useRouter } from "next/router";
 import { Slide } from "@mui/material";
 import { getCatalogService, getSpecService, getReviewService } from "../../server/config/services";
@@ -65,6 +65,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 
 const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
   const { add, alert = null, isAlertVisible } = useContext(CartContext);
+  const { formatProductPrice } = useDisplayCurrency();
   const [hideAlert, setHideAlert] = useState(false);
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
@@ -211,11 +212,11 @@ const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
               {/* Price (with original strike-through if on sale) */}
               <div className="flex flex-col items-center lg:items-start mt-6">
                 <p className="text-4xl sm:text-5xl font-bold text-gray-900" style={{ letterSpacing: "-0.02em" }}>
-                  {formatPrice(getProductPrice(product))}
+                  {formatProductPrice(getProductPrice(product), product.currency)}
                 </p>
                 {isOnSale && product.originalPriceCents && (
                   <p className="text-lg text-gray-400 line-through mt-1">
-                    {formatPrice(product.originalPriceCents / 100)}
+                    {formatProductPrice(product.originalPriceCents / 100, product.currency)}
                   </p>
                 )}
               </div>

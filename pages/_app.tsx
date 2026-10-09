@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import CartContext, {
   CartContextProps,
 } from "../components/context/CartContext";
+import { DisplayCurrencyProvider } from "../components/context/DisplayCurrencyContext";
 import Footer from "../components/Footer";
 import WatchShowcase from "../components/WatchShowcase";
 import Spinner from "../components/Spinner";
@@ -10,14 +11,12 @@ import { useState, useEffect, ReactElement } from "react";
 import { useRouter } from "next/router";
 import _ from "lodash";
 import { Alert, Slide } from "@mui/material";
-import { getProductPrice } from "../utils/computed";
 import { Product } from "../server/domain/types";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const showFooter = !router.pathname.startsWith("/admin");
   const [items, setItems] = useState<Product[]>([]);
-  const [total, setTotal] = useState<number>(0);
   const [alert, setAlert] = useState<ReactElement | null>(null);
   const [alertVisible, setAlertVisible] = useState<boolean | undefined>(false);
   const [routeLoading, setRouteLoading] = useState(false);
@@ -46,15 +45,11 @@ function MyApp({ Component, pageProps }: AppProps) {
       return item.id === productID;
     });
     setItems(i);
-
-    let item = items.filter((item) => item.id === productID);
-    setTotal((prev) => prev - getProductPrice(item[0]));
   };
 
   const removeAll = () => {
     let i = _.reject(items);
     setItems(i);
-    setTotal(0);
   };
 
   const add = (product: Product) => {
@@ -71,7 +66,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         </Alert>
       );
       setAlertVisible(true);
-      setTotal((prev) => prev + getProductPrice(product));
       playSound("notification-success.mp3");
     } else {
       setAlert(
@@ -94,7 +88,6 @@ function MyApp({ Component, pageProps }: AppProps) {
     add: add,
     remove: remove,
     removeAll: removeAll,
-    total: total,
     alert: alert,
     isAlertVisible: alertVisible,
   };
@@ -102,6 +95,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
   return (
+    <DisplayCurrencyProvider>
     <CartContext.Provider value={cartContext}>
       {routeLoading && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/70 backdrop-blur-sm">
@@ -126,6 +120,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         </a>
       )}
     </CartContext.Provider>
+    </DisplayCurrencyProvider>
   );
 }
 

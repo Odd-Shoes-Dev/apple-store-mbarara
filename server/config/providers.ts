@@ -8,6 +8,8 @@ import { PgReviewRepository } from "../adapters/db/pg/ReviewRepository.pg";
 import { PgTradeinRepository } from "../adapters/db/pg/TradeinRepository.pg";
 import { PgRepairRequestRepository } from "../adapters/db/pg/RepairRequestRepository.pg";
 import { PgStoreGalleryRepository } from "../adapters/db/pg/StoreGalleryRepository.pg";
+import { PgExchangeRateSettingsRepository } from "../adapters/db/pg/ExchangeRateSettingsRepository.pg";
+import { OpenErApiExchangeRateProvider } from "../adapters/exchange-rate/openErApi";
 import { PgSubscriberRepository } from "../adapters/db/pg/SubscriberRepository.pg";
 import { ImageKitStorageProvider } from "../adapters/storage/imagekit";
 import { StripePaymentProvider } from "../adapters/payments/stripe";
@@ -20,6 +22,8 @@ import { ReviewRepository } from "../ports/ReviewRepository";
 import { TradeinRepository } from "../ports/TradeinRepository";
 import { RepairRequestRepository } from "../ports/RepairRequestRepository";
 import { StoreGalleryRepository } from "../ports/StoreGalleryRepository";
+import { ExchangeRateSettingsRepository } from "../ports/ExchangeRateSettingsRepository";
+import { ExchangeRateProvider } from "../ports/ExchangeRateProvider";
 import { SubscriberRepository } from "../ports/SubscriberRepository";
 import { StorageProvider } from "../ports/StorageProvider";
 import { PaymentProvider } from "../ports/PaymentProvider";
@@ -113,6 +117,22 @@ export function getSubscriberRepository(): SubscriberRepository {
     subscriberRepository = new PgSubscriberRepository(pool);
   }
   return subscriberRepository;
+}
+
+let exchangeRateSettingsRepository: ExchangeRateSettingsRepository | undefined;
+export function getExchangeRateSettingsRepository(): ExchangeRateSettingsRepository {
+  if (!exchangeRateSettingsRepository) {
+    exchangeRateSettingsRepository = new PgExchangeRateSettingsRepository(pool);
+  }
+  return exchangeRateSettingsRepository;
+}
+
+let exchangeRateProvider: ExchangeRateProvider | undefined;
+export function getExchangeRateProvider(): ExchangeRateProvider {
+  if (!exchangeRateProvider) {
+    exchangeRateProvider = new OpenErApiExchangeRateProvider();
+  }
+  return exchangeRateProvider;
 }
 
 let storageProvider: StorageProvider | undefined;

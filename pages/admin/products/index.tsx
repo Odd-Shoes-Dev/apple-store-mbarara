@@ -6,6 +6,7 @@ import { requireAdminPage } from "../../../lib/adminAuth";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import RowActionsMenu from "../../../components/admin/RowActionsMenu";
 import Spinner from "../../../components/Spinner";
+import { formatCurrency } from "../../../utils/currency";
 import { Category, Product } from "../../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -129,7 +130,7 @@ const AdminProducts: NextPage = () => {
                       <td className="px-4 py-2 text-sm text-gray-900">{product.name}</td>
                       <td className="px-4 py-2 text-sm text-gray-500">{product.category?.name ?? "—"}</td>
                       <td className="px-4 py-2 text-sm text-gray-500">
-                        ${(product.priceCents / 100).toFixed(2)}
+                        {formatCurrency(product.priceCents / 100, product.currency)}
                       </td>
                       <td className="px-4 py-2 text-sm">
                         <span className={product.active ? "text-emerald-600" : "text-gray-400"}>

@@ -1,8 +1,8 @@
 import { FunctionComponent, useContext } from "react";
 import CartContext from "./context/CartContext";
+import { useDisplayCurrency } from "./context/DisplayCurrencyContext";
 import {
   getProductPrice,
-  formatPrice,
   getProductDescription,
   getProductImage,
   getProductName,
@@ -17,6 +17,7 @@ export type CardProps = {
 
 const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
   const { add } = useContext(CartContext);
+  const { formatProductPrice } = useDisplayCurrency();
 
   const outOfStock = product.stockCount === 0;
   const isOnSale =
@@ -91,11 +92,11 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
       <div className="flex items-center justify-between mt-5 pt-5 border-t border-gray-200">
         <div className="flex flex-col">
           <span className="font-semibold text-gray-900 text-sm">
-            {formatPrice(getProductPrice(product))}
+            {formatProductPrice(getProductPrice(product), product.currency)}
           </span>
           {isOnSale && product.originalPriceCents && (
             <span className="text-xs text-gray-400 line-through">
-              {formatPrice(product.originalPriceCents / 100)}
+              {formatProductPrice(product.originalPriceCents / 100, product.currency)}
             </span>
           )}
         </div>
