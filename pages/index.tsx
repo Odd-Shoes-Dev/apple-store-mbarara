@@ -370,7 +370,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
               <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: "#c9a15a" }}>Trade-in</p>
               <h2 className="text-3xl font-bold text-white mb-4" style={{ letterSpacing: "-0.02em" }}>Swap your old device</h2>
               <p className="text-sm leading-relaxed mb-8" style={{ color: "#a1a1a6" }}>
-                Get a fair price for your old iPhone, Mac, or iPad — and put it towards something new.
+                Get a fair price for your old iPhone, Mac, or iPad and put it towards something new.
                 We assess every device and give you a quote same-day.
               </p>
               <Link href="/trade-in" passHref>
@@ -411,7 +411,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
                 Apple Store Mbarara
               </h3>
               <p className="mt-4 text-sm leading-relaxed" style={{ color: "#a1a1a6" }}>
-                On High Street in the town centre — easy parking, five minutes from the main taxi park.
+                On High Street in the town centre easy parking, five minutes from the main taxi park.
               </p>
 
               <div className="mt-8 flex flex-col gap-5">
