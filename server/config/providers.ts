@@ -7,6 +7,7 @@ import { PgSpecRepository } from "../adapters/db/pg/SpecRepository.pg";
 import { PgReviewRepository } from "../adapters/db/pg/ReviewRepository.pg";
 import { PgTradeinRepository } from "../adapters/db/pg/TradeinRepository.pg";
 import { PgRepairRequestRepository } from "../adapters/db/pg/RepairRequestRepository.pg";
+import { PgStoreGalleryRepository } from "../adapters/db/pg/StoreGalleryRepository.pg";
 import { PgSubscriberRepository } from "../adapters/db/pg/SubscriberRepository.pg";
 import { ImageKitStorageProvider } from "../adapters/storage/imagekit";
 import { StripePaymentProvider } from "../adapters/payments/stripe";
@@ -18,6 +19,7 @@ import { SpecRepository } from "../ports/SpecRepository";
 import { ReviewRepository } from "../ports/ReviewRepository";
 import { TradeinRepository } from "../ports/TradeinRepository";
 import { RepairRequestRepository } from "../ports/RepairRequestRepository";
+import { StoreGalleryRepository } from "../ports/StoreGalleryRepository";
 import { SubscriberRepository } from "../ports/SubscriberRepository";
 import { StorageProvider } from "../ports/StorageProvider";
 import { PaymentProvider } from "../ports/PaymentProvider";
@@ -95,6 +97,14 @@ export function getRepairRequestRepository(): RepairRequestRepository {
     repairRequestRepository = new PgRepairRequestRepository(pool);
   }
   return repairRequestRepository;
+}
+
+let storeGalleryRepository: StoreGalleryRepository | undefined;
+export function getStoreGalleryRepository(): StoreGalleryRepository {
+  if (!storeGalleryRepository) {
+    storeGalleryRepository = new PgStoreGalleryRepository(pool);
+  }
+  return storeGalleryRepository;
 }
 
 let subscriberRepository: SubscriberRepository | undefined;

@@ -7,6 +7,7 @@ import { createSpecService } from "../services/specService";
 import { createReviewService } from "../services/reviewService";
 import { createTradeinService } from "../services/tradeinService";
 import { createRepairService } from "../services/repairService";
+import { createStoreGalleryService } from "../services/storeGalleryService";
 import { createSubscriberService } from "../services/subscriberService";
 import {
   getAdminUserRepository,
@@ -18,6 +19,7 @@ import {
   getReviewRepository,
   getTradeinRepository,
   getRepairRequestRepository,
+  getStoreGalleryRepository,
   getSubscriberRepository,
 } from "./providers";
 
@@ -83,6 +85,14 @@ export function getTradeinService() {
     tradeinService = createTradeinService(getTradeinRepository());
   }
   return tradeinService;
+}
+
+let storeGalleryService: ReturnType<typeof createStoreGalleryService> | undefined;
+export function getStoreGalleryService() {
+  if (!storeGalleryService) {
+    storeGalleryService = createStoreGalleryService(getStoreGalleryRepository());
+  }
+  return storeGalleryService;
 }
 
 let repairService: ReturnType<typeof createRepairService> | undefined;

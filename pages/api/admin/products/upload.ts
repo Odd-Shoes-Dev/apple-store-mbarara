@@ -16,8 +16,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const form = formidable({ maxFiles: 1, maxFileSize: 10 * 1024 * 1024 });
-  const [, files] = await form.parse(req);
+  // Stay under ImageKit's own free-plan cap (25MB for images) so we never accept
+  // a file our storage provider would silently fail to process.
+  const maxFileSize = 20 * 1024 * 1024;
+  const form = formidable({ maxFiles: 1, maxFileSize });
+
+  let files;
+  try {
+    [, files] = await form.parse(req);
+  } catch (err) {
+    if (err instanceof Error && "httpCode" in err && (err as { httpCode?: number }).httpCode === 413) {
+      return res.status(413).json({
+        message: `File is too large. Maximum size is ${Math.floor(maxFileSize / (1024 * 1024))}MB.`,
+      });
+    }
+    return res.status(400).json({ message: "Upload failed. Please try a different file." });
+  }
 
   const fileField = files.file;
   const file = Array.isArray(fileField) ? fileField[0] : fileField;

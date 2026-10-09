@@ -102,6 +102,27 @@ export type HeroSlide = {
 export type NewHeroSlideInput = Omit<HeroSlide, 'id' | 'createdAt' | 'updatedAt'>;
 export type UpdateHeroSlideInput = Partial<NewHeroSlideInput>;
 
+export type StoreGalleryImage = {
+  id: string;
+  imageUrl: string;
+  imageKey: string;
+  caption: string | null;
+  position: number;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type NewStoreGalleryImageInput = {
+  imageUrl: string;
+  imageKey: string;
+  caption: string | null;
+  position: number;
+  active: boolean;
+};
+
+export type UpdateStoreGalleryImageInput = Partial<NewStoreGalleryImageInput>;
+
 export type ProductSpec = {
   id: string;
   productId: string;

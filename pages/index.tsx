@@ -6,23 +6,26 @@ import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import NewArrivalCard from "../components/NewArrivalCard";
-import { getCatalogService, getHeroService } from "../server/config/services";
-import { HeroSlide, Product } from "../server/domain/types";
+import { getCatalogService, getHeroService, getStoreGalleryService } from "../server/config/services";
+import { HeroSlide, Product, StoreGalleryImage } from "../server/domain/types";
 import HeroCarousel from "../components/HeroCarousel";
 import Reveal from "../components/Reveal";
+import StoreGallery from "../components/StoreGallery";
 
 type Props = {
   featuredProducts: Product[];
   heroSlides: HeroSlide[];
   newArrivals: Product[];
+  galleryImages: StoreGalleryImage[];
 };
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
   const catalogService = getCatalogService();
-  const [featuredProducts, heroSlides, newArrivals] = await Promise.all([
+  const [featuredProducts, heroSlides, newArrivals, galleryImages] = await Promise.all([
     catalogService.listFeaturedProducts(),
     getHeroService().listActive(),
     catalogService.listNewArrivals(),
+    getStoreGalleryService().listActive(),
   ]);
 
   return {
@@ -30,6 +33,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
       featuredProducts: JSON.parse(JSON.stringify(featuredProducts)),
       heroSlides: JSON.parse(JSON.stringify(heroSlides)),
       newArrivals: JSON.parse(JSON.stringify(newArrivals)),
+      galleryImages: JSON.parse(JSON.stringify(galleryImages)),
     },
   };
 };
@@ -97,7 +101,7 @@ const trustItems = [
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 
-const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrivals }) => {
+const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrivals, galleryImages }) => {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const [email, setEmail] = useState("");
   const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -355,6 +359,9 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
           </div>
         </Reveal>
       </section>
+
+      {/* ── STORE GALLERY ────────────────────────────────────────── */}
+      <StoreGallery images={galleryImages} />
 
       {/* ── TRADE-IN CTA ──────────────────────────────────────────── */}
       <section className="py-20 bg-white border-t border-gray-200">

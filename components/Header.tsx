@@ -2,7 +2,7 @@ import { FunctionComponent, useContext, useEffect, useState } from "react";
 import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import AppleLogo from "../public/apple-icon.svg";
+import Logo from "../public/logo.png";
 import { ShoppingBagIcon } from "@heroicons/react/outline";
 import { Popover, Transition } from "@headlessui/react";
 import CartContext from "./context/CartContext";
@@ -100,7 +100,7 @@ const Header: FunctionComponent = () => {
             <div className="flex-1 flex items-center">
               <Link href="/" passHref>
                 <a className="flex items-center">
-                  <Image src={AppleLogo} width="50" height="50" alt="icon" />
+                  <Image src={Logo} width={101} height={36} alt="Apple Store Mbarara" />
                 </a>
               </Link>
             </div>

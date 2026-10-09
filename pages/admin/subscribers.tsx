@@ -29,6 +29,7 @@ const AdminSubscribers: NextPage = () => {
         <nav className="bg-white border-b px-6 py-3 flex items-center gap-6 text-sm">
           <Link href="/admin/products" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Products</a></Link>
           <Link href="/admin/hero" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Hero</a></Link>
+          <Link href="/admin/store-gallery" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Store Gallery</a></Link>
           <Link href="/admin/reviews" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Reviews</a></Link>
           <Link href="/admin/trade-in" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Trade-in</a></Link>
           <Link href="/admin/repair" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Repair</a></Link>
