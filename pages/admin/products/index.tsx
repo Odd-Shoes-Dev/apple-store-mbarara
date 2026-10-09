@@ -2,8 +2,8 @@ import { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
 import { requireAdminPage } from "../../../lib/adminAuth";
+import AdminLayout from "../../../components/admin/AdminLayout";
 import Spinner from "../../../components/Spinner";
 import { Category, Product } from "../../../server/domain/types";
 
@@ -58,31 +58,17 @@ const AdminProducts: NextPage = () => {
       <Head>
         <title>Admin | Products</title>
       </Head>
-      <div className="min-h-screen bg-gray-100">
-        <header className="bg-white shadow-sm">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <AdminLayout>
+        <main className="max-w-5xl mx-auto px-5 sm:px-6 py-6 sm:py-8">
+          <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-semibold text-gray-900">Products</h1>
-            <div className="flex items-center gap-4">
-              <Link href="/admin/categories" className="text-sm text-gray-500 hover:text-gray-800">
-                Categories
-              </Link>
-              <Link
-                href="/admin/products/new"
-                className="bg-slate-800 text-white rounded-md px-4 py-2 text-sm hover:bg-slate-900"
-              >
-                New product
-              </Link>
-              <button
-                onClick={() => signOut({ callbackUrl: "/admin/login" })}
-                className="text-sm text-gray-500 hover:text-gray-800"
-              >
-                Sign out
-              </button>
-            </div>
+            <Link
+              href="/admin/products/new"
+              className="bg-slate-800 text-white rounded-md px-4 py-2 text-sm hover:bg-slate-900"
+            >
+              + New product
+            </Link>
           </div>
-        </header>
-
-        <main className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex flex-wrap gap-3 mb-4">
             <input
               type="text"
@@ -173,7 +159,7 @@ const AdminProducts: NextPage = () => {
             )}
           </div>
         </main>
-      </div>
+      </AdminLayout>
     </>
   );
 };

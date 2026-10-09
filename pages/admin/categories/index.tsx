@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { requireAdminPage } from "../../../lib/adminAuth";
+import AdminLayout from "../../../components/admin/AdminLayout";
 import Spinner from "../../../components/Spinner";
 import { Category } from "../../../server/domain/types";
 
@@ -50,28 +51,17 @@ const AdminCategories: NextPage = () => {
       <Head>
         <title>Admin | Categories</title>
       </Head>
-      <div className="min-h-screen bg-gray-100">
-        <header className="bg-white shadow-sm">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <AdminLayout>
+        <main className="max-w-5xl mx-auto px-5 sm:px-6 py-6 sm:py-8">
+          <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-semibold text-gray-900">Categories</h1>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin/products"
-                className="text-sm text-gray-500 hover:text-gray-800"
-              >
-                Products
-              </Link>
-              <Link
-                href="/admin/categories/new"
-                className="bg-slate-800 text-white rounded-md px-4 py-2 text-sm hover:bg-slate-900"
-              >
-                New category
-              </Link>
-            </div>
+            <Link
+              href="/admin/categories/new"
+              className="bg-slate-800 text-white rounded-md px-4 py-2 text-sm hover:bg-slate-900"
+            >
+              + New category
+            </Link>
           </div>
-        </header>
-
-        <main className="max-w-5xl mx-auto px-4 py-6">
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -111,7 +101,7 @@ const AdminCategories: NextPage = () => {
             )}
           </div>
         </main>
-      </div>
+      </AdminLayout>
     </>
   );
 };

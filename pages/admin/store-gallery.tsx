@@ -1,8 +1,8 @@
 import { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
 import { useEffect, useState, ChangeEvent } from "react";
 import { requireAdminPage } from "../../lib/adminAuth";
+import AdminLayout from "../../components/admin/AdminLayout";
 import Spinner from "../../components/Spinner";
 import { StoreGalleryImage } from "../../server/domain/types";
 
@@ -125,18 +125,8 @@ const AdminStoreGallery: NextPage = () => {
   return (
     <>
       <Head><title>Admin | Store Gallery</title></Head>
-      <div className="min-h-screen bg-gray-100">
-        <nav className="bg-white border-b px-6 py-3 flex items-center gap-6 text-sm flex-wrap">
-          <Link href="/admin/products" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Products</a></Link>
-          <Link href="/admin/hero" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Hero</a></Link>
-          <Link href="/admin/store-gallery" passHref><a className="font-semibold text-gray-900 underline">Store Gallery</a></Link>
-          <Link href="/admin/reviews" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Reviews</a></Link>
-          <Link href="/admin/trade-in" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Trade-in</a></Link>
-          <Link href="/admin/repair" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Repair</a></Link>
-          <Link href="/admin/subscribers" passHref><a className="font-medium text-gray-700 hover:text-gray-900">Subscribers</a></Link>
-        </nav>
-
-        <div className="max-w-3xl mx-auto px-6 py-8">
+      <AdminLayout>
+        <div className="max-w-3xl mx-auto px-5 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-xl font-semibold text-gray-900">Store Gallery</h1>
             <span className="text-xs text-gray-400">{images.length} / {MAX_IMAGES}</span>
@@ -200,7 +190,7 @@ const AdminStoreGallery: NextPage = () => {
             </div>
           )}
         </div>
-      </div>
+      </AdminLayout>
     </>
   );
 };
