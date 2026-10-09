@@ -111,7 +111,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Component {...pageProps} />
       {showFooter && <WatchShowcase />}
       {showFooter && <Footer />}
-      {waNumber && (
+      {showFooter && waNumber && (
         <a
           href={`https://wa.me/${waNumber.replace(/\D/g, "")}`}
           target="_blank"

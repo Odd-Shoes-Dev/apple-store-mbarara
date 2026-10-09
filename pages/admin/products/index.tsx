@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { requireAdminPage } from "../../../lib/adminAuth";
 import AdminLayout from "../../../components/admin/AdminLayout";
+import RowActionsMenu from "../../../components/admin/RowActionsMenu";
 import Spinner from "../../../components/Spinner";
 import { Category, Product } from "../../../server/domain/types";
 
@@ -100,7 +101,7 @@ const AdminProducts: NextPage = () => {
             </select>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -135,15 +136,13 @@ const AdminProducts: NextPage = () => {
                           {product.active ? "Active" : "Archived"}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-sm text-right space-x-3">
-                        <Link href={`/admin/products/${product.id}/edit`} className="text-slate-700 hover:underline">
-                          Edit
-                        </Link>
-                        {product.active && (
-                          <button onClick={() => archive(product.id)} className="text-rose-600 hover:underline">
-                            Archive
-                          </button>
-                        )}
+                      <td className="px-4 py-2 text-sm text-right">
+                        <RowActionsMenu
+                          actions={[
+                            { label: "Edit", href: `/admin/products/${product.id}/edit` },
+                            { label: "Archive", onClick: () => archive(product.id), destructive: true, hidden: !product.active },
+                          ]}
+                        />
                       </td>
                     </tr>
                   ))}

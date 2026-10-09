@@ -3,6 +3,7 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { requireAdminPage } from "../../lib/adminAuth";
 import AdminLayout from "../../components/admin/AdminLayout";
+import RowActionsMenu from "../../components/admin/RowActionsMenu";
 import Spinner from "../../components/Spinner";
 import { Review } from "../../server/domain/types";
 
@@ -53,7 +54,7 @@ const AdminReviews: NextPage = () => {
           ) : reviews.length === 0 ? (
             <p className="text-gray-500">No reviews yet.</p>
           ) : (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   <tr>
@@ -75,11 +76,13 @@ const AdminReviews: NextPage = () => {
                           {r.approved ? "Approved" : "Pending"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 flex gap-2">
-                        {!r.approved && (
-                          <button onClick={() => approve(r.id)} className="text-xs text-teal-600 hover:underline">Approve</button>
-                        )}
-                        <button onClick={() => remove(r.id)} className="text-xs text-rose-600 hover:underline">Delete</button>
+                      <td className="px-4 py-3 text-right">
+                        <RowActionsMenu
+                          actions={[
+                            { label: "Approve", onClick: () => approve(r.id), hidden: r.approved },
+                            { label: "Delete", onClick: () => remove(r.id), destructive: true },
+                          ]}
+                        />
                       </td>
                     </tr>
                   ))}

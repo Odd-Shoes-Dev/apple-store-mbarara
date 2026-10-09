@@ -104,7 +104,7 @@ const AdminTradein: NextPage = () => {
           ) : requests.length === 0 ? (
             <p className="text-gray-500">No requests yet.</p>
           ) : (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   <tr>

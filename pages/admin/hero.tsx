@@ -3,6 +3,7 @@ import Head from "next/head";
 import { useEffect, useState, ChangeEvent } from "react";
 import { requireAdminPage } from "../../lib/adminAuth";
 import AdminLayout from "../../components/admin/AdminLayout";
+import RowActionsMenu from "../../components/admin/RowActionsMenu";
 import Spinner from "../../components/Spinner";
 import { HeroSlide } from "../../server/domain/types";
 
@@ -272,8 +273,12 @@ const AdminHero: NextPage = () => {
                     >
                       {slide.active ? "Live" : "Hidden"}
                     </button>
-                    <button onClick={() => openEdit(slide)} className="text-xs text-blue-600 hover:underline">Edit</button>
-                    <button onClick={() => remove(slide.id)} className="text-xs text-rose-500 hover:underline">Delete</button>
+                    <RowActionsMenu
+                      actions={[
+                        { label: "Edit", onClick: () => openEdit(slide) },
+                        { label: "Delete", onClick: () => remove(slide.id), destructive: true },
+                      ]}
+                    />
                   </div>
                 </div>
               ))}

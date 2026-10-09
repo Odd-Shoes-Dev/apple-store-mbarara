@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { requireAdminPage } from "../../../lib/adminAuth";
 import AdminLayout from "../../../components/admin/AdminLayout";
+import RowActionsMenu from "../../../components/admin/RowActionsMenu";
 import Spinner from "../../../components/Spinner";
 import { Category } from "../../../server/domain/types";
 
@@ -62,7 +63,7 @@ const AdminCategories: NextPage = () => {
               + New category
             </Link>
           </div>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -79,13 +80,13 @@ const AdminCategories: NextPage = () => {
                       <td className="px-4 py-2 text-sm text-gray-900">{category.name}</td>
                       <td className="px-4 py-2 text-sm text-gray-500">{category.parentName ?? "—"}</td>
                       <td className="px-4 py-2 text-sm text-gray-500">{category.slug}</td>
-                      <td className="px-4 py-2 text-sm text-right space-x-3">
-                        <Link href={`/admin/categories/${category.id}/edit`} className="text-slate-700 hover:underline">
-                          Edit
-                        </Link>
-                        <button onClick={() => remove(category)} className="text-rose-600 hover:underline">
-                          Delete
-                        </button>
+                      <td className="px-4 py-2 text-sm text-right">
+                        <RowActionsMenu
+                          actions={[
+                            { label: "Edit", href: `/admin/categories/${category.id}/edit` },
+                            { label: "Delete", onClick: () => remove(category), destructive: true },
+                          ]}
+                        />
                       </td>
                     </tr>
                   ))}

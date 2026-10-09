@@ -1,8 +1,9 @@
-import { ReactNode, useState } from "react";
+import { Fragment, ReactNode, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { signOut } from "next-auth/react";
+import { Transition } from "@headlessui/react";
 import Logo from "../../public/logo.png";
 
 const icon = (path: ReactNode) => (
@@ -63,6 +64,34 @@ function isItemActive(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 }
 
+const MobileMenuPanel = ({ pathname, onNavigate }: { pathname: string; onNavigate: () => void }) => (
+  <div className="flex flex-col divide-y divide-gray-100">
+    {NAV_ITEMS.map((item) => {
+      const active = isItemActive(pathname, item.href);
+      return (
+        <Link key={item.href} href={item.href} passHref>
+          <a
+            onClick={onNavigate}
+            className={`flex items-center gap-3 px-5 py-3.5 text-base font-medium ${
+              active ? "text-slate-900 bg-slate-50" : "text-gray-600"
+            }`}
+          >
+            {item.icon}
+            {item.label}
+          </a>
+        </Link>
+      );
+    })}
+    <button
+      onClick={() => signOut({ callbackUrl: "/admin/login" })}
+      className="flex items-center gap-3 px-5 py-3.5 text-base font-medium text-rose-600"
+    >
+      {icon(<><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></>)}
+      Sign out
+    </button>
+  </div>
+);
+
 const SidebarContent = ({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) => (
   <>
     <div className="h-16 flex items-center gap-2 px-5 border-b border-gray-200 flex-shrink-0">
@@ -110,7 +139,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen bg-gray-100 lg:flex">
       {/* Mobile top bar */}
-      <div className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 h-14 flex items-center justify-between">
+      <div className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 h-14 flex items-center justify-between relative">
         <Link href="/admin" passHref>
           <a className="flex items-center gap-2">
             <Image src={Logo} width={76} height={27} alt="Apple Store Mbarara" />
@@ -118,27 +147,41 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           </a>
         </Link>
         <button
-          onClick={() => setMobileOpen(true)}
+          onClick={() => setMobileOpen((v) => !v)}
           className="p-2 -mr-2 text-gray-600"
-          aria-label="Open menu"
+          aria-label="Toggle menu"
+          aria-expanded={mobileOpen}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="4" y1="7" x2="20" y2="7" />
-            <line x1="4" y1="12" x2="20" y2="12" />
-            <line x1="4" y1="17" x2="14" y2="17" />
-          </svg>
+          {mobileOpen ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18" />
+            </svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="17" x2="14" y2="17" />
+            </svg>
+          )}
         </button>
-      </div>
 
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-72 max-w-[80%] h-full bg-white flex flex-col shadow-xl">
-            <SidebarContent pathname={router.pathname} onNavigate={() => setMobileOpen(false)} />
-          </aside>
-        </div>
-      )}
+        {/* Mobile nav dropdown — full width, anchored directly under the trigger */}
+        <Transition
+          show={mobileOpen}
+          as={Fragment}
+          enter="transition ease-out duration-200"
+          enterFrom="opacity-0 -translate-y-2"
+          enterTo="opacity-100 translate-y-0"
+          leave="transition ease-in duration-150"
+          leaveFrom="opacity-100 translate-y-0"
+          leaveTo="opacity-0 -translate-y-2"
+        >
+          <div className="absolute top-full inset-x-0 z-40 bg-white border-t border-gray-200 shadow-lg max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+            <MobileMenuPanel pathname={router.pathname} onNavigate={() => setMobileOpen(false)} />
+          </div>
+        </Transition>
+      </div>
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:flex-shrink-0 bg-white border-r border-gray-200 lg:sticky lg:top-0 lg:h-screen">
