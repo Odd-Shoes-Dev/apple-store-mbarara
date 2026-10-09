@@ -4,7 +4,6 @@ import Link from "next/link";
 import Script from "next/script";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 import NewArrivalCard from "../components/NewArrivalCard";
 import { getCatalogService, getHeroService, getStoreGalleryService } from "../server/config/services";
 import { HeroSlide, Product, StoreGalleryImage } from "../server/domain/types";
@@ -502,8 +501,6 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
           {subState === "error" && <p className="text-rose-500 text-xs mt-2">Something went wrong. Try again.</p>}
         </Reveal>
       </section>
-
-      <Footer />
     </>
   );
 };

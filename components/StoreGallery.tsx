@@ -3,6 +3,7 @@ import { StoreGalleryImage } from "../server/domain/types";
 
 export type StoreGalleryProps = {
   images: StoreGalleryImage[];
+  title?: string;
 };
 
 const Tile = ({ image, className = "" }: { image: StoreGalleryImage; className?: string }) => (
@@ -20,12 +21,20 @@ const Tile = ({ image, className = "" }: { image: StoreGalleryImage; className?:
   </div>
 );
 
-const StoreGallery: FunctionComponent<StoreGalleryProps> = ({ images }) => {
+const StoreGallery: FunctionComponent<StoreGalleryProps> = ({ images, title }) => {
   if (images.length === 0) return null;
 
   return (
     <section className="py-16 bg-white">
       <div className="max-w-5xl mx-auto px-5 lg:px-0">
+        {title && (
+          <h2
+            className="font-bold text-gray-900 mb-6"
+            style={{ fontSize: "clamp(1.75rem, 4vw, 2.5rem)", letterSpacing: "-0.03em" }}
+          >
+            {title}
+          </h2>
+        )}
         {images.length === 1 && (
           <Tile image={images[0]} className="h-80 sm:h-[28rem]" />
         )}

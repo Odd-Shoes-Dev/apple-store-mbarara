@@ -6,7 +6,6 @@ import type {
 import Head from "next/head";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 import Reveal from "../../components/Reveal";
 import {
   getProductPrice,
@@ -383,8 +382,6 @@ const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
             </section>
           )}
         </div>
-
-        <Footer />
 
         <div className="fixed bottom-10 left-5" style={{ zIndex: 999 }}>
           {isAlertVisible && alert !== null && (

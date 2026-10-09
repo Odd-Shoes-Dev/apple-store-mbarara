@@ -2,7 +2,6 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 import PageHero from "../components/PageHero";
 
 const TradeInPage: NextPage = () => {
@@ -114,7 +113,6 @@ const TradeInPage: NextPage = () => {
           )}
         </div>
       </main>
-      <Footer />
     </>
   );
 };

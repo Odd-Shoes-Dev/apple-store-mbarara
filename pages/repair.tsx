@@ -2,7 +2,6 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 import PageHero from "../components/PageHero";
 import FeatureGrid, { FeatureItem } from "../components/FeatureGrid";
 import FaqAccordion, { FaqItem } from "../components/FaqAccordion";
@@ -205,8 +204,6 @@ const RepairPage: NextPage = () => {
         whatsappNumber={waNumber}
         whatsappMessage="Hi, I'd like a repair quote for my device."
       />
-
-      <Footer />
     </>
   );
 };

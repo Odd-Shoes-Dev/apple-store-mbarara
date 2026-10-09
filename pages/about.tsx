@@ -1,12 +1,27 @@
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 import PageHero from "../components/PageHero";
 import FeatureGrid, { FeatureItem } from "../components/FeatureGrid";
 import CtaBanner from "../components/CtaBanner";
+import StoreGallery from "../components/StoreGallery";
+import { getStoreGalleryService } from "../server/config/services";
+import { StoreGalleryImage } from "../server/domain/types";
 
 const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+
+type Props = {
+  galleryImages: StoreGalleryImage[];
+};
+
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+  const galleryImages = await getStoreGalleryService().listActive();
+  return {
+    props: {
+      galleryImages: JSON.parse(JSON.stringify(galleryImages)),
+    },
+  };
+};
 
 const values: FeatureItem[] = [
   {
@@ -51,7 +66,7 @@ const values: FeatureItem[] = [
   },
 ];
 
-const AboutPage: NextPage = () => {
+const AboutPage: NextPage<Props> = ({ galleryImages }) => {
   return (
     <>
       <Head>
@@ -63,9 +78,11 @@ const AboutPage: NextPage = () => {
       <PageHero
         eyebrow="About"
         title="Genuine Apple, the Mbarara way."
-        subtitle="We started with one promise: every device we hand you is exactly what it says on the box — sealed, verifiable, and backed by a real warranty."
+        subtitle="We started with one promise: every device we hand you is exactly what it says on the box, sealed, verifiable, and backed by a real warranty."
         pills={["Genuine & Sealed", "Warranty Included", "Local & Trusted"]}
       />
+
+      <StoreGallery images={galleryImages} title="Inside the store" />
 
       <section className="py-14 bg-gray-50">
         <div className="max-w-5xl mx-auto px-5 lg:px-0">
@@ -82,8 +99,6 @@ const AboutPage: NextPage = () => {
         whatsappNumber={waNumber}
         whatsappMessage="Hi, I have a question about Apple Store Mbarara."
       />
-
-      <Footer />
     </>
   );
 };
