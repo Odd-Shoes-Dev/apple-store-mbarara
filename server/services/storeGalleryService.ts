@@ -11,6 +11,9 @@ export function createStoreGalleryService(repo: StoreGalleryRepository) {
     listAll(): Promise<StoreGalleryImage[]> {
       return repo.listAll();
     },
+    getById(id: string): Promise<StoreGalleryImage | null> {
+      return repo.getById(id);
+    },
     async create(input: NewStoreGalleryImageInput): Promise<StoreGalleryImage> {
       const existing = await repo.listAll();
       if (existing.length >= MAX_IMAGES) {

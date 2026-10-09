@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { requireAdminApi } from "../../../../lib/adminAuth";
 import { getStoreGalleryService } from "../../../../server/config/services";
+import { getStorageProvider } from "../../../../server/config/providers";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -27,7 +28,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === "DELETE") {
+    const existing = await svc.getById(id);
     await svc.delete(id);
+    if (existing?.imageKey) {
+      await getStorageProvider().delete(existing.imageKey);
+    }
     return res.status(200).json({ message: "Deleted" });
   }
 
