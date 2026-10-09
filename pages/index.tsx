@@ -480,19 +480,19 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
           {subState === "done" ? (
             <p className="text-teal-600 font-medium text-sm">You are subscribed!</p>
           ) : (
-            <form onSubmit={handleSubscribe} className="flex gap-3 max-w-sm mx-auto">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto">
               <input
                 required
                 type="email"
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 border border-gray-300 rounded-full px-5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-black"
+                className="flex-1 min-w-0 border border-gray-300 rounded-full px-5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-black"
               />
               <button
                 type="submit"
                 disabled={subState === "loading"}
-                className="bg-black text-white text-sm font-semibold rounded-full px-6 py-2.5 hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="bg-black text-white text-sm font-semibold rounded-full px-6 py-2.5 hover:bg-gray-800 transition-colors disabled:opacity-50 sm:flex-shrink-0"
               >
                 {subState === "loading" ? "..." : "Subscribe"}
               </button>
