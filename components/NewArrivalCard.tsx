@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useDisplayCurrency } from "./context/DisplayCurrencyContext";
 import { useQuickView } from "./context/QuickViewContext";
@@ -16,6 +16,9 @@ export type NewArrivalCardProps = {
 const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => {
   const { formatProductPrice } = useDisplayCurrency();
   const { openQuickView } = useQuickView();
+  // Tracked explicitly (not via CSS :hover/group-hover) so the lift/zoom doesn't
+  // snap back the instant the quick-view overlay covers the card.
+  const [hovered, setHovered] = useState(false);
   const outOfStock = product.stockCount === 0;
   const isOnSale =
     product.originalPriceCents !== null &&
@@ -29,7 +32,12 @@ const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => 
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") openQuickView(product);
       }}
-      className="group relative block w-64 flex-none rounded-3xl overflow-hidden bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={`relative block w-64 flex-none rounded-3xl overflow-hidden bg-white border border-gray-100 shadow-sm transition-all duration-300 cursor-pointer ${
+        hovered ? "-translate-y-1 shadow-lg" : ""
+      }`}
+    >
         {/* NEW / SALE tag */}
         {product.isNewArrival && !isOnSale && (
           <span
@@ -57,9 +65,9 @@ const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => 
           <LazyLoadImage
             src={getProductImage(product)}
             alt={getProductName(product)}
-            className={`max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-110 ${
-              outOfStock ? "opacity-50" : ""
-            }`}
+            className={`max-h-full max-w-full object-contain transition-transform duration-500 ease-out ${
+              hovered ? "scale-110" : ""
+            } ${outOfStock ? "opacity-50" : ""}`}
           />
         </div>
 
@@ -86,7 +94,9 @@ const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => 
               )}
             </div>
             <span
-              className="text-xs font-semibold flex items-center gap-1 transition-transform duration-200 group-hover:translate-x-0.5"
+              className={`text-xs font-semibold flex items-center gap-1 transition-transform duration-200 ${
+                hovered ? "translate-x-0.5" : ""
+              }`}
               style={{ color: "#c9a15a" }}
             >
               {outOfStock ? "Sold out" : "View"}

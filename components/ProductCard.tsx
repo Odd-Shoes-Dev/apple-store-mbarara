@@ -1,4 +1,4 @@
-import { FunctionComponent, useContext } from "react";
+import { FunctionComponent, useContext, useState } from "react";
 import CartContext from "./context/CartContext";
 import { useDisplayCurrency } from "./context/DisplayCurrencyContext";
 import { useQuickView } from "./context/QuickViewContext";
@@ -19,6 +19,9 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
   const { add } = useContext(CartContext);
   const { formatProductPrice } = useDisplayCurrency();
   const { openQuickView } = useQuickView();
+  // Tracked explicitly (not via CSS :hover) so the lift doesn't snap back the
+  // instant the quick-view overlay covers the card — only a real mouse leave clears it.
+  const [hovered, setHovered] = useState(false);
 
   const outOfStock = product.stockCount === 0;
   const isOnSale =
@@ -32,7 +35,13 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
   };
 
   return (
-    <div className="w-full bg-gray-100 rounded-2xl p-6 flex flex-col transition-all duration-250 hover:-translate-y-1 hover:shadow-xl relative overflow-hidden">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={`w-full bg-gray-100 rounded-2xl p-6 flex flex-col transition-all duration-250 relative overflow-hidden ${
+        hovered ? "-translate-y-1 shadow-xl" : ""
+      }`}
+    >
       {/* NEW / SALE badge */}
       {product.isNewArrival && !isOnSale && (
         <span className="absolute top-3 left-3 z-10 bg-teal-500 text-white text-[0.6rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
