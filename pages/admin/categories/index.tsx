@@ -6,6 +6,7 @@ import { requireAdminPage } from "../../../lib/adminAuth";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import RowActionsMenu from "../../../components/admin/RowActionsMenu";
 import Spinner from "../../../components/Spinner";
+import { useConfirm } from "../../../components/context/ConfirmContext";
 import { Category } from "../../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -19,6 +20,7 @@ type Row = Category & { parentName: string | null };
 const AdminCategories: NextPage = () => {
   const [categories, setCategories] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const confirm = useConfirm();
 
   const load = async () => {
     setLoading(true);
@@ -38,10 +40,17 @@ const AdminCategories: NextPage = () => {
       childCount > 0
         ? `Deleting "${category.name}" will also remove its ${childCount} sub-categor${
             childCount === 1 ? "y" : "ies"
-          }. Products under them become uncategorized, not deleted. Continue?`
-        : `Delete "${category.name}"? Products under it become uncategorized, not deleted.`;
+          }. Products under them become uncategorized, not deleted.`
+        : `Products under "${category.name}" become uncategorized, not deleted.`;
 
-    if (!confirm(warning)) return;
+    if (
+      !(await confirm(warning, {
+        title: `Delete "${category.name}"?`,
+        confirmLabel: "Delete",
+        destructive: true,
+      }))
+    )
+      return;
 
     await fetch(`/api/admin/categories/${category.id}`, { method: "DELETE" });
     load();

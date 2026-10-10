@@ -5,6 +5,7 @@ import { requireAdminPage } from "../../lib/adminAuth";
 import AdminLayout from "../../components/admin/AdminLayout";
 import RowActionsMenu from "../../components/admin/RowActionsMenu";
 import Spinner from "../../components/Spinner";
+import { useConfirm } from "../../components/context/ConfirmContext";
 import { Review } from "../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -19,6 +20,7 @@ const stars = (rating: number) =>
 const AdminReviews: NextPage = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const confirm = useConfirm();
 
   const load = async () => {
     setLoading(true);
@@ -36,7 +38,7 @@ const AdminReviews: NextPage = () => {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this review?")) return;
+    if (!(await confirm("Delete this review?", { confirmLabel: "Delete", destructive: true }))) return;
     await fetch(`/api/admin/reviews/${id}`, { method: "DELETE" });
     load();
   };

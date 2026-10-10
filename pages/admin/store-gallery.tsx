@@ -4,6 +4,7 @@ import { useEffect, useState, ChangeEvent } from "react";
 import { requireAdminPage } from "../../lib/adminAuth";
 import AdminLayout from "../../components/admin/AdminLayout";
 import Spinner from "../../components/Spinner";
+import { useConfirm } from "../../components/context/ConfirmContext";
 import { StoreGalleryImage } from "../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -20,6 +21,7 @@ const AdminStoreGallery: NextPage = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [captionDrafts, setCaptionDrafts] = useState<Record<string, string>>({});
+  const confirm = useConfirm();
 
   const load = async () => {
     setLoading(true);
@@ -117,7 +119,7 @@ const AdminStoreGallery: NextPage = () => {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this image?")) return;
+    if (!(await confirm("Delete this image?", { confirmLabel: "Delete", destructive: true }))) return;
     await fetch(`/api/admin/store-gallery/${id}`, { method: "DELETE" });
     load();
   };

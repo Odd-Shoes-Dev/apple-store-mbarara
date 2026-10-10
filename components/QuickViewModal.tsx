@@ -141,7 +141,10 @@ const QuickViewModal: FunctionComponent<Props> = ({ product, onClose }) => {
                         {outOfStock ? "Out of stock" : "Add to bag"}
                       </button>
                       <Link href={`/products/${displayProduct.id}`} passHref>
-                        <a className="w-full text-center text-sm font-semibold text-blue-600 hover:underline py-1">
+                        <a
+                          onClick={onClose}
+                          className="w-full text-center text-sm font-semibold text-blue-600 hover:underline py-1"
+                        >
                           View full details
                         </a>
                       </Link>

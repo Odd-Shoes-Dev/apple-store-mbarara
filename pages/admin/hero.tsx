@@ -5,6 +5,7 @@ import { requireAdminPage } from "../../lib/adminAuth";
 import AdminLayout from "../../components/admin/AdminLayout";
 import RowActionsMenu from "../../components/admin/RowActionsMenu";
 import Spinner from "../../components/Spinner";
+import { useConfirm } from "../../components/context/ConfirmContext";
 import { HeroSlide } from "../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -39,6 +40,7 @@ const AdminHero: NextPage = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const load = async () => {
     setLoading(true);
@@ -135,7 +137,7 @@ const AdminHero: NextPage = () => {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this slide?")) return;
+    if (!(await confirm("Delete this slide?", { confirmLabel: "Delete", destructive: true }))) return;
     await fetch(`/api/admin/hero/${id}`, { method: "DELETE" });
     load();
   };

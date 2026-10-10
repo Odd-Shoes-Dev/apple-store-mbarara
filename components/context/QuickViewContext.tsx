@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useRouter } from "next/router";
 import { Product } from "../../server/domain/types";
 import QuickViewModal from "../QuickViewModal";
 
@@ -14,6 +15,15 @@ export const useQuickView = () => useContext(QuickViewContext);
 
 export function QuickViewProvider({ children }: { children: ReactNode }) {
   const [product, setProduct] = useState<Product | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const close = () => setProduct(null);
+    router.events.on("routeChangeStart", close);
+    return () => {
+      router.events.off("routeChangeStart", close);
+    };
+  }, [router]);
 
   return (
     <QuickViewContext.Provider value={{ openQuickView: setProduct }}>

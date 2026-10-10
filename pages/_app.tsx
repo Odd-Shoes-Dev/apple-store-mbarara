@@ -5,6 +5,7 @@ import CartContext, {
 } from "../components/context/CartContext";
 import { DisplayCurrencyProvider } from "../components/context/DisplayCurrencyContext";
 import { QuickViewProvider } from "../components/context/QuickViewContext";
+import { ConfirmProvider } from "../components/context/ConfirmContext";
 import Footer from "../components/Footer";
 import WatchShowcase from "../components/WatchShowcase";
 import Spinner from "../components/Spinner";
@@ -96,6 +97,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
   return (
+    <ConfirmProvider>
     <DisplayCurrencyProvider>
     <CartContext.Provider value={cartContext}>
     <QuickViewProvider>
@@ -124,6 +126,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     </QuickViewProvider>
     </CartContext.Provider>
     </DisplayCurrencyProvider>
+    </ConfirmProvider>
   );
 }
 

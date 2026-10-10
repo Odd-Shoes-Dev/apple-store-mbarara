@@ -6,6 +6,7 @@ import { requireAdminPage } from "../../../lib/adminAuth";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import RowActionsMenu from "../../../components/admin/RowActionsMenu";
 import Spinner from "../../../components/Spinner";
+import { useConfirm } from "../../../components/context/ConfirmContext";
 import { formatCurrency } from "../../../utils/currency";
 import { Category, Product } from "../../../server/domain/types";
 
@@ -28,6 +29,7 @@ const AdminProducts: NextPage = () => {
   const [activeFilter, setActiveFilter] = useState<"ALL" | "true" | "false">("ALL");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetch("/api/admin/categories")
@@ -60,13 +62,20 @@ const AdminProducts: NextPage = () => {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const archive = async (id: string) => {
-    if (!confirm("Archive this product?")) return;
+    if (!(await confirm("Archive this product?", { confirmLabel: "Archive", destructive: true }))) return;
     await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
     load(page);
   };
 
   const deleteProduct = async (id: string) => {
-    if (!confirm("Permanently delete this product? This also deletes its images and cannot be undone.")) return;
+    if (
+      !(await confirm("This also deletes its images and cannot be undone.", {
+        title: "Permanently delete this product?",
+        confirmLabel: "Delete",
+        destructive: true,
+      }))
+    )
+      return;
     await fetch(`/api/admin/products/${id}?hard=true`, { method: "DELETE" });
     load(page);
   };
