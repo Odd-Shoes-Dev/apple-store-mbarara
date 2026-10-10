@@ -33,8 +33,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === "DELETE") {
-    await categoryService.delete(id);
-    return res.status(204).end();
+    try {
+      await categoryService.delete(id);
+      return res.status(204).end();
+    } catch (err) {
+      // @ts-ignore
+      return res.status(400).json({ message: err.message });
+    }
   }
 
   res.setHeader("Allow", "GET, PATCH, DELETE");
