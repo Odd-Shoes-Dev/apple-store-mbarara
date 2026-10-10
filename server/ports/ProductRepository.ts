@@ -13,4 +13,5 @@ export interface ProductRepository {
   create(input: NewProductInput): Promise<Product>;
   update(id: string, input: UpdateProductInput): Promise<Product>;
   archive(id: string): Promise<void>;
+  delete(id: string): Promise<void>;
 }

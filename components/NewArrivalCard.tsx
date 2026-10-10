@@ -1,7 +1,7 @@
 import { FunctionComponent } from "react";
-import Link from "next/link";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useDisplayCurrency } from "./context/DisplayCurrencyContext";
+import { useQuickView } from "./context/QuickViewContext";
 import {
   getProductPrice,
   getProductImage,
@@ -15,14 +15,21 @@ export type NewArrivalCardProps = {
 
 const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => {
   const { formatProductPrice } = useDisplayCurrency();
+  const { openQuickView } = useQuickView();
   const outOfStock = product.stockCount === 0;
   const isOnSale =
     product.originalPriceCents !== null &&
     product.originalPriceCents > product.priceCents;
 
   return (
-    <Link href={`/products/${product.id}`} passHref>
-      <a className="group relative block w-64 flex-none rounded-3xl overflow-hidden bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => openQuickView(product)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") openQuickView(product);
+      }}
+      className="group relative block w-64 flex-none rounded-3xl overflow-hidden bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
         {/* NEW / SALE tag */}
         {product.isNewArrival && !isOnSale && (
           <span
@@ -92,8 +99,7 @@ const NewArrivalCard: FunctionComponent<NewArrivalCardProps> = ({ product }) => 
             </span>
           </div>
         </div>
-      </a>
-    </Link>
+    </div>
   );
 };
 

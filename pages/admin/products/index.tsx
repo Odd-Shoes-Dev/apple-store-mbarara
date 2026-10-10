@@ -65,6 +65,12 @@ const AdminProducts: NextPage = () => {
     load(page);
   };
 
+  const deleteProduct = async (id: string) => {
+    if (!confirm("Permanently delete this product? This also deletes its images and cannot be undone.")) return;
+    await fetch(`/api/admin/products/${id}?hard=true`, { method: "DELETE" });
+    load(page);
+  };
+
   return (
     <>
       <Head>
@@ -152,6 +158,7 @@ const AdminProducts: NextPage = () => {
                           actions={[
                             { label: "Edit", href: `/admin/products/${product.id}/edit` },
                             { label: "Archive", onClick: () => archive(product.id), destructive: true, hidden: !product.active },
+                            { label: "Delete", onClick: () => deleteProduct(product.id), destructive: true },
                           ]}
                         />
                       </td>

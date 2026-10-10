@@ -60,6 +60,10 @@ export function createCatalogService(productRepository: ProductRepository) {
       return productRepository.archive(id);
     },
 
+    deleteProduct(id: string): Promise<void> {
+      return productRepository.delete(id);
+    },
+
     listRelated(productId: string, categoryId: string | null, limit = 4): Promise<Product[]> {
       if (!categoryId) return Promise.resolve([]);
       return productRepository

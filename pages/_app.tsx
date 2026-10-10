@@ -4,6 +4,7 @@ import CartContext, {
   CartContextProps,
 } from "../components/context/CartContext";
 import { DisplayCurrencyProvider } from "../components/context/DisplayCurrencyContext";
+import { QuickViewProvider } from "../components/context/QuickViewContext";
 import Footer from "../components/Footer";
 import WatchShowcase from "../components/WatchShowcase";
 import Spinner from "../components/Spinner";
@@ -97,6 +98,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <DisplayCurrencyProvider>
     <CartContext.Provider value={cartContext}>
+    <QuickViewProvider>
       {routeLoading && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/70 backdrop-blur-sm">
           <Spinner />
@@ -119,6 +121,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           </svg>
         </a>
       )}
+    </QuickViewProvider>
     </CartContext.Provider>
     </DisplayCurrencyProvider>
   );

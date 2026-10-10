@@ -46,7 +46,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === "DELETE") {
-    await catalogService.archiveProduct(id);
+    const hardDelete = req.query.hard === "true" || req.query.hard === "1";
+
+    if (!hardDelete) {
+      await catalogService.archiveProduct(id);
+      return res.status(204).end();
+    }
+
+    const existing = await catalogService.getProductById(id);
+    if (!existing) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    await catalogService.deleteProduct(id);
+
+    if (existing.images.length > 0) {
+      const storage = getStorageProvider();
+      await Promise.allSettled(existing.images.map((img) => storage.delete(img.key)));
+    }
+
     return res.status(204).end();
   }
 

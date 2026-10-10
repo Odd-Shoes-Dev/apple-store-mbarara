@@ -301,4 +301,8 @@ export class PgProductRepository implements ProductRepository {
   async archive(id: string): Promise<void> {
     await this.db.query(`UPDATE products SET active = false WHERE id = $1`, [id]);
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.query(`DELETE FROM products WHERE id = $1`, [id]);
+  }
 }

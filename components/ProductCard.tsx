@@ -1,6 +1,7 @@
 import { FunctionComponent, useContext } from "react";
 import CartContext from "./context/CartContext";
 import { useDisplayCurrency } from "./context/DisplayCurrencyContext";
+import { useQuickView } from "./context/QuickViewContext";
 import {
   getProductPrice,
   getProductDescription,
@@ -8,7 +9,6 @@ import {
   getProductName,
 } from "../utils/computed";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import Link from "next/link";
 import { CONDITION_LABELS, Product } from "../server/domain/types";
 
 export type CardProps = {
@@ -18,6 +18,7 @@ export type CardProps = {
 const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
   const { add } = useContext(CartContext);
   const { formatProductPrice } = useDisplayCurrency();
+  const { openQuickView } = useQuickView();
 
   const outOfStock = product.stockCount === 0;
   const isOnSale =
@@ -25,7 +26,7 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
     product.originalPriceCents > product.priceCents;
 
   const addToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
+    e.stopPropagation();
     if (outOfStock) return;
     if (add) add(product);
   };
@@ -52,41 +53,47 @@ const ProductCard: FunctionComponent<CardProps> = ({ product }) => {
       )}
 
       {/* Image + info */}
-      <Link href={`/products/${product.id}`} passHref>
-        <a className="flex flex-col flex-1">
-          <div className="h-44 flex items-center justify-center mb-5">
-            <LazyLoadImage
-              src={getProductImage(product)}
-              alt={getProductDescription(product)}
-              className={`max-h-full max-w-full object-contain transition-opacity ${outOfStock ? "opacity-50" : ""}`}
-            />
-          </div>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => openQuickView(product)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") openQuickView(product);
+        }}
+        className="flex flex-col flex-1 cursor-pointer"
+      >
+        <div className="h-44 flex items-center justify-center mb-5">
+          <LazyLoadImage
+            src={getProductImage(product)}
+            alt={getProductDescription(product)}
+            className={`max-h-full max-w-full object-contain transition-opacity ${outOfStock ? "opacity-50" : ""}`}
+          />
+        </div>
 
-          {/* Category label */}
-          {product.category && (
-            <span className="text-[0.68rem] font-mono uppercase tracking-widest text-gray-400">
-              {product.category.name}
-            </span>
-          )}
+        {/* Category label */}
+        {product.category && (
+          <span className="text-[0.68rem] font-mono uppercase tracking-widest text-gray-400">
+            {product.category.name}
+          </span>
+        )}
 
-          {/* Product name */}
-          <h3 className="mt-1 text-base font-semibold text-gray-900 leading-snug">
-            {getProductName(product)}
-          </h3>
+        {/* Product name */}
+        <h3 className="mt-1 text-base font-semibold text-gray-900 leading-snug">
+          {getProductName(product)}
+        </h3>
 
-          {/* Condition chip */}
-          {product.condition !== "brand_new" && (
-            <span className="mt-1 inline-block self-start text-[0.65rem] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-              {CONDITION_LABELS[product.condition]}
-            </span>
-          )}
+        {/* Condition chip */}
+        {product.condition !== "brand_new" && (
+          <span className="mt-1 inline-block self-start text-[0.65rem] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+            {CONDITION_LABELS[product.condition]}
+          </span>
+        )}
 
-          {/* Description */}
-          <p className="mt-1 text-sm text-gray-500 overflow-hidden whitespace-nowrap text-ellipsis">
-            {getProductDescription(product)}
-          </p>
-        </a>
-      </Link>
+        {/* Description */}
+        <p className="mt-1 text-sm text-gray-500 overflow-hidden whitespace-nowrap text-ellipsis">
+          {getProductDescription(product)}
+        </p>
+      </div>
 
       {/* Footer: price + add to bag */}
       <div className="flex items-center justify-between mt-5 pt-5 border-t border-gray-200">
