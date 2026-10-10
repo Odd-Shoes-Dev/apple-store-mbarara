@@ -1,7 +1,9 @@
 import { StoreGalleryRepository } from "../ports/StoreGalleryRepository";
 import { NewStoreGalleryImageInput, StoreGalleryImage, UpdateStoreGalleryImageInput } from "../domain/types";
 
-const MAX_IMAGES = 3;
+// Any number of images can be stored — this only caps how many can be
+// *live* on the landing page at the same time.
+const MAX_ACTIVE_IMAGES = 3;
 
 export function createStoreGalleryService(repo: StoreGalleryRepository) {
   return {
@@ -15,13 +17,22 @@ export function createStoreGalleryService(repo: StoreGalleryRepository) {
       return repo.getById(id);
     },
     async create(input: NewStoreGalleryImageInput): Promise<StoreGalleryImage> {
-      const existing = await repo.listAll();
-      if (existing.length >= MAX_IMAGES) {
-        throw new Error(`You can only have up to ${MAX_IMAGES} gallery images`);
+      if (input.active) {
+        const activeCount = (await repo.listActive()).length;
+        if (activeCount >= MAX_ACTIVE_IMAGES) {
+          throw new Error(`Only ${MAX_ACTIVE_IMAGES} images can be live at once. Deactivate one first.`);
+        }
       }
       return repo.create(input);
     },
-    update(id: string, input: UpdateStoreGalleryImageInput): Promise<StoreGalleryImage> {
+    async update(id: string, input: UpdateStoreGalleryImageInput): Promise<StoreGalleryImage> {
+      if (input.active) {
+        const activeImages = await repo.listActive();
+        const alreadyActive = activeImages.some((img) => img.id === id);
+        if (!alreadyActive && activeImages.length >= MAX_ACTIVE_IMAGES) {
+          throw new Error(`Only ${MAX_ACTIVE_IMAGES} images can be live at once. Deactivate one first.`);
+        }
+      }
       return repo.update(id, input);
     },
     delete(id: string): Promise<void> {

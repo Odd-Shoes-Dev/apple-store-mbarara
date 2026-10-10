@@ -189,18 +189,18 @@ const AdminHero: NextPage = () => {
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <label className="block text-xs font-medium text-gray-600 mb-1">Background color</label>
                       <div className="flex items-center gap-2">
-                        <input type="color" value={form.backgroundColor} onChange={set("backgroundColor")} className="w-10 h-8 rounded cursor-pointer border border-gray-300" />
-                        <input value={form.backgroundColor} onChange={set("backgroundColor")} className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-mono" />
+                        <input type="color" value={form.backgroundColor} onChange={set("backgroundColor")} className="w-10 h-8 rounded cursor-pointer border border-gray-300 flex-shrink-0" />
+                        <input value={form.backgroundColor} onChange={set("backgroundColor")} className="flex-1 min-w-0 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-mono" />
                       </div>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <label className="block text-xs font-medium text-gray-600 mb-1">Accent color</label>
                       <div className="flex items-center gap-2">
-                        <input type="color" value={form.accentColor} onChange={set("accentColor")} className="w-10 h-8 rounded cursor-pointer border border-gray-300" />
-                        <input value={form.accentColor} onChange={set("accentColor")} className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-mono" />
+                        <input type="color" value={form.accentColor} onChange={set("accentColor")} className="w-10 h-8 rounded cursor-pointer border border-gray-300 flex-shrink-0" />
+                        <input value={form.accentColor} onChange={set("accentColor")} className="flex-1 min-w-0 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-mono" />
                       </div>
                     </div>
                   </div>
@@ -269,15 +269,15 @@ const AdminHero: NextPage = () => {
 
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <span className="text-xs text-gray-400">#{slide.position}</span>
-                    <button
-                      onClick={() => toggleActive(slide)}
+                    <span
                       className={`px-2 py-0.5 rounded-full text-xs font-semibold ${slide.active ? "bg-teal-100 text-teal-700" : "bg-gray-100 text-gray-500"}`}
                     >
                       {slide.active ? "Live" : "Hidden"}
-                    </button>
+                    </span>
                     <RowActionsMenu
                       actions={[
                         { label: "Edit", onClick: () => openEdit(slide) },
+                        { label: slide.active ? "Deactivate" : "Activate", onClick: () => toggleActive(slide) },
                         { label: "Delete", onClick: () => remove(slide.id), destructive: true },
                       ]}
                     />

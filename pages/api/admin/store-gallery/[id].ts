@@ -8,6 +8,8 @@ const updateSchema = z.object({
   caption: z.string().max(80).optional().nullable(),
   position: z.number().int().min(0).optional(),
   active: z.boolean().optional(),
+  imageUrl: z.string().url().optional(),
+  imageKey: z.string().min(1).optional(),
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -23,8 +25,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!parsed.success) {
       return res.status(400).json({ message: "Invalid input", issues: parsed.error.issues });
     }
-    const image = await svc.update(id, parsed.data);
-    return res.status(200).json({ image });
+
+    try {
+      const previous = await svc.getById(id);
+      const image = await svc.update(id, parsed.data);
+
+      if (parsed.data.imageKey && previous && previous.imageKey !== parsed.data.imageKey) {
+        await getStorageProvider().delete(previous.imageKey);
+      }
+
+      return res.status(200).json({ image });
+    } catch (err) {
+      return res.status(400).json({ message: err instanceof Error ? err.message : "Failed to update" });
+    }
   }
 
   if (req.method === "DELETE") {
