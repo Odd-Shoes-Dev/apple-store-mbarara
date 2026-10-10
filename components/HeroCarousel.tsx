@@ -22,26 +22,70 @@ const WHEEL_THRESHOLD = 30;
 const WHEEL_COOLDOWN = 600;
 
 export default function HeroCarousel({ slides, whatsappNumber }: Props) {
-  const [current, setCurrent] = useState(0);
+  const loop = slides.length > 1;
+
+  // trackIndex is the DOM position within the rendered track. When looping,
+  // the track is [clone-of-last, ...slides, clone-of-first], so real slide 0
+  // lives at trackIndex 1. Going past either end lands on a clone, which is
+  // visually identical to the real slide it mirrors — once that transition
+  // finishes we silently snap back to the real one with no transition, so
+  // the loop reads as continuous instead of rewinding through every slide.
+  const [trackIndex, setTrackIndex] = useState(loop ? 1 : 0);
   const [paused, setPaused] = useState(false);
   const [dragOffset, setDragOffset] = useState(0); // percent of track width, follows the pointer live
   const [dragging, setDragging] = useState(false);
+  const [snapping, setSnapping] = useState(false);
 
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStartX = useRef<number | null>(null);
   const lastWheelAt = useRef(0);
 
-  const next = useCallback(() => setCurrent((c) => (c + 1) % slides.length), [slides.length]);
-  const prev = useCallback(() => setCurrent((c) => (c - 1 + slides.length) % slides.length), [slides.length]);
+  const current = loop ? (trackIndex - 1 + slides.length) % slides.length : trackIndex;
+
+  // Clamped to the track's actual bounds — without this, firing next()/prev()
+  // again before the previous transition (and any clone snap-correction) has
+  // settled — a fast double-swipe, rapid arrow clicks, the auto-advance timer
+  // landing mid-transition — could walk trackIndex past the last rendered
+  // panel, scrolling into the empty overflow-hidden space beyond it.
+  const maxTrackIndex = loop ? slides.length + 1 : slides.length - 1;
+  const next = useCallback(
+    () => setTrackIndex((i) => Math.min(i + 1, maxTrackIndex)),
+    [maxTrackIndex]
+  );
+  const prev = useCallback(() => setTrackIndex((i) => Math.max(i - 1, 0)), []);
 
   useEffect(() => {
-    if (slides.length <= 1 || paused) return;
+    if (!loop || paused) return;
     const id = setInterval(next, INTERVAL);
     return () => clearInterval(id);
-  }, [slides.length, paused, next]);
+  }, [loop, paused, next]);
+
+  // After landing on a clone panel, jump (no transition) to the matching
+  // real slide once the pointer/wheel-triggered animation has settled.
+  const onTransitionEnd = () => {
+    if (!loop) return;
+    if (trackIndex === 0) {
+      setSnapping(true);
+      setTrackIndex(slides.length);
+    } else if (trackIndex === slides.length + 1) {
+      setSnapping(true);
+      setTrackIndex(1);
+    }
+  };
+
+  useEffect(() => {
+    if (!snapping) return;
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(() => setSnapping(false));
+      return () => cancelAnimationFrame(raf2);
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, [snapping]);
+
+  const goTo = (index: number) => setTrackIndex(loop ? index + 1 : index);
 
   const startDrag = (clientX: number) => {
-    if (slides.length <= 1) return;
+    if (!loop) return;
     dragStartX.current = clientX;
     setDragging(true);
     setPaused(true);
@@ -89,7 +133,7 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
 
   // Two-finger horizontal trackpad scroll — ignore mostly-vertical scrolling.
   const onWheel = (e: WheelEvent) => {
-    if (slides.length <= 1 || Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < WHEEL_THRESHOLD) {
+    if (!loop || Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < WHEEL_THRESHOLD) {
       return;
     }
     const now = Date.now();
@@ -102,6 +146,7 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
   if (slides.length === 0) return null;
 
   const activeSlide = slides[current];
+  const trackSlides = loop ? [slides[slides.length - 1], ...slides, slides[0]] : slides;
 
   return (
     <div
@@ -119,20 +164,21 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
       <div
         ref={trackRef}
         className="flex"
+        onTransitionEnd={onTransitionEnd}
         style={{
-          transform: `translateX(calc(${-current * 100}% + ${dragOffset}%))`,
-          transition: dragging ? "none" : "transform 400ms cubic-bezier(0.22, 1, 0.36, 1)",
-          cursor: slides.length > 1 ? (dragging ? "grabbing" : "grab") : undefined,
+          transform: `translateX(calc(${-trackIndex * 100}% + ${dragOffset}%))`,
+          transition: dragging || snapping ? "none" : "transform 400ms cubic-bezier(0.22, 1, 0.36, 1)",
+          cursor: loop ? (dragging ? "grabbing" : "grab") : undefined,
         }}
       >
-        {slides.map((slide) => {
+        {trackSlides.map((slide, i) => {
           const waLink = whatsappNumber
             ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi, I'm interested in the ${slide.title}`)}`
             : null;
 
           return (
             <div
-              key={slide.id}
+              key={`${slide.id}-${i}`}
               className="relative w-full flex-shrink-0"
               style={{ background: slide.backgroundColor }}
             >
@@ -236,7 +282,7 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
       </div>
 
       {/* Prev / Next arrows */}
-      {slides.length > 1 && (
+      {loop && (
         <>
           <button
             onClick={prev}
@@ -260,12 +306,12 @@ export default function HeroCarousel({ slides, whatsappNumber }: Props) {
       )}
 
       {/* Dot indicators */}
-      {slides.length > 1 && (
+      {loop && (
         <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-2 z-20">
           {slides.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrent(i)}
+              onClick={() => goTo(i)}
               className="rounded-full transition-all duration-300"
               style={{
                 width: i === current ? 20 : 6,
