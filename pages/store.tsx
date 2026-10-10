@@ -4,14 +4,16 @@ import Header from "../components/Header";
 import PageHero from "../components/PageHero";
 import TabPills, { Tab } from "../components/TabPills";
 import { Fragment, useState, useEffect, useRef, useContext } from "react";
+import useSWRInfinite from "swr/infinite";
 import Spinner from "../components/Spinner";
 import Head from "next/head";
 import CartContext from "../components/context/CartContext";
 import { Slide } from "@mui/material";
 import { Popover, Transition } from "@headlessui/react";
 import { SearchIcon, AdjustmentsIcon } from "@heroicons/react/outline";
+import { fetcher } from "../lib/swrFetcher";
 import { getCatalogService, getCategoryService } from "../server/config/services";
-import { CategoryWithChildren, Product, ProductSort } from "../server/domain/types";
+import { CategoryWithChildren, Product, ProductPage, ProductSort } from "../server/domain/types";
 
 const PAGE_SIZE = 12;
 
@@ -119,13 +121,7 @@ const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, ta
     { value: "lowToHigh", label: "Price: Low to High" },
   ];
 
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [total, setTotal] = useState(initialTotal);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const hasMore = products.length < total;
 
   const { alert = null, isAlertVisible } = useContext(CartContext);
   const [hideAlert, setHideAlert] = useState(false);
@@ -135,43 +131,47 @@ const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, ta
     return dept ? [dept.id, ...dept.children.map((c) => c.id)] : undefined;
   };
 
-  const fetchPage = async (pageToFetch: number, append: boolean) => {
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set("search", debouncedSearch);
-    const categoryIds = selectedTab !== "all" ? categoryIdsFor(selectedTab) : undefined;
-    if (categoryIds && categoryIds.length > 0) params.set("categoryIds", categoryIds.join(","));
-    params.set("sort", sortParamFor(selectedOption?.value));
-    params.set("page", String(pageToFetch));
-    params.set("pageSize", String(PAGE_SIZE));
-
-    if (append) setLoadingMore(true);
-    else setLoading(true);
-
-    try {
-      const res = await fetch(`/api/products?${params.toString()}`);
-      const data = await res.json();
-      setProducts((prev) => (append ? [...prev, ...data.products] : data.products));
-      setTotal(data.total ?? 0);
-      setPage(pageToFetch);
-    } finally {
-      if (append) setLoadingMore(false);
-      else setLoading(false);
-    }
-  };
-
   // Debounce the search box before it drives a fetch.
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 350);
     return () => clearTimeout(t);
   }, [search]);
 
+  const getKey = (pageIndex: number, previousPageData: ProductPage | null) => {
+    if (previousPageData && previousPageData.products.length === 0) return null;
+
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    const categoryIds = selectedTab !== "all" ? categoryIdsFor(selectedTab) : undefined;
+    if (categoryIds && categoryIds.length > 0) params.set("categoryIds", categoryIds.join(","));
+    params.set("sort", sortParamFor(selectedOption?.value));
+    params.set("page", String(pageIndex + 1));
+    params.set("pageSize", String(PAGE_SIZE));
+    return `/api/products?${params.toString()}`;
+  };
+
+  // Seed SWR's cache with what SSR already fetched for the initial filters,
+  // so the first render doesn't re-fetch page 1 over the network.
+  const { data, size, setSize, isValidating } = useSWRInfinite<ProductPage>(getKey, fetcher, {
+    fallbackData: [{ products: initialProducts, total: initialTotal, page: 1, pageSize: PAGE_SIZE }],
+    revalidateFirstPage: false,
+  });
+
+  const products = data ? data.flatMap((d) => d.products) : [];
+  const total = data?.[0]?.total ?? initialTotal;
+  const isLoadingInitial = !data;
+  const isLoadingMore = isValidating && size > 0 && typeof data?.[size - 1] === "undefined";
+  const hasMore = products.length < total;
+
+  // Reset back to page 1 whenever filters change, instead of re-fetching
+  // however many pages were loaded under the previous filter.
   const didMountRef = useRef(false);
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
       return;
     }
-    fetchPage(1, false);
+    setSize(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTab, selectedOption, debouncedSearch]);
 
@@ -181,8 +181,8 @@ const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, ta
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
-          fetchPage(page + 1, true);
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isLoadingInitial) {
+          setSize(size + 1);
         }
       },
       { rootMargin: "600px" }
@@ -190,7 +190,7 @@ const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, ta
     observer.observe(el);
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, hasMore, loadingMore, loading]);
+  }, [size, hasMore, isLoadingMore, isLoadingInitial]);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout | null = null;
@@ -280,7 +280,7 @@ const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, ta
               </Popover>
             </div>
           </div>
-          {!loading && products.length === 0 && (
+          {!isLoadingInitial && products.length === 0 && (
             <p className="text-center text-gray-500 mt-12">
               {debouncedSearch
                 ? `No products match "${debouncedSearch}".`
@@ -290,22 +290,22 @@ const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, ta
             </p>
           )}
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {!loading && products.map((p) => (
+            {!isLoadingInitial && products.map((p) => (
               <ProductCard product={p} key={p.id} />
             ))}
           </div>
           <div ref={sentinelRef} className="h-1" />
-          {loadingMore && (
+          {isLoadingMore && (
             <div className="flex justify-center py-8">
               <Spinner />
             </div>
           )}
           <div
             className={`fixed z-999 top-0 left-0 w-full h-full flex items-center justify-center ${
-              loading ? "visible" : "invisible"
+              isLoadingInitial ? "visible" : "invisible"
             }`}
           >
-            {loading && <Spinner />}
+            {isLoadingInitial && <Spinner />}
           </div>
         </div>
         <div className="fixed bottom-10 left-5" style={{ zIndex: 999 }}>

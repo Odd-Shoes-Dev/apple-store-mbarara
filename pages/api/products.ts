@@ -29,5 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     parsedPageSize
   );
 
+  // CDN-cached briefly; SWR on the client revalidates on its own on top of this,
+  // so changes (new/archived products) never stay stale for more than ~30-60s.
+  res.setHeader("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
   return res.status(200).json(result);
 }

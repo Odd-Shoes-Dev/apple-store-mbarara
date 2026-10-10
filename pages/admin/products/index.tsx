@@ -2,13 +2,15 @@ import { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { requireAdminPage } from "../../../lib/adminAuth";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import RowActionsMenu from "../../../components/admin/RowActionsMenu";
 import Spinner from "../../../components/Spinner";
 import { useConfirm } from "../../../components/context/ConfirmContext";
+import { fetcher } from "../../../lib/swrFetcher";
 import { formatCurrency } from "../../../utils/currency";
-import { Category, Product } from "../../../server/domain/types";
+import { Category, ProductPage } from "../../../server/domain/types";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const redirect = await requireAdminPage(context);
@@ -21,14 +23,11 @@ type CategoryRow = Category & { parentName: string | null };
 const PAGE_SIZE = 20;
 
 const AdminProducts: NextPage = () => {
-  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState<string>("ALL");
   const [activeFilter, setActiveFilter] = useState<"ALL" | "true" | "false">("ALL");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const confirm = useConfirm();
 
   useEffect(() => {
@@ -37,26 +36,23 @@ const AdminProducts: NextPage = () => {
       .then((data) => setCategories(data.categories ?? []));
   }, []);
 
-  const load = async (pageToLoad: number) => {
-    setLoading(true);
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (categoryId !== "ALL") params.set("categoryId", categoryId);
-    if (activeFilter !== "ALL") params.set("active", activeFilter);
-    params.set("page", String(pageToLoad));
-    params.set("pageSize", String(PAGE_SIZE));
+  // Revisiting the same filters/page reuses this cache instead of refetching.
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (categoryId !== "ALL") params.set("categoryId", categoryId);
+  if (activeFilter !== "ALL") params.set("active", activeFilter);
+  params.set("page", String(page));
+  params.set("pageSize", String(PAGE_SIZE));
 
-    const res = await fetch(`/api/admin/products?${params.toString()}`);
-    const data = await res.json();
-    setProducts(data.products ?? []);
-    setTotal(data.total ?? 0);
-    setPage(pageToLoad);
-    setLoading(false);
-  };
+  const { data, isLoading, mutate } = useSWR<ProductPage>(
+    `/api/admin/products?${params.toString()}`,
+    fetcher
+  );
+  const products = data?.products ?? [];
+  const total = data?.total ?? 0;
 
   useEffect(() => {
-    load(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setPage(1);
   }, [search, categoryId, activeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -64,7 +60,7 @@ const AdminProducts: NextPage = () => {
   const archive = async (id: string) => {
     if (!(await confirm("Archive this product?", { confirmLabel: "Archive", destructive: true }))) return;
     await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
-    load(page);
+    mutate();
   };
 
   const deleteProduct = async (id: string) => {
@@ -77,7 +73,7 @@ const AdminProducts: NextPage = () => {
     )
       return;
     await fetch(`/api/admin/products/${id}?hard=true`, { method: "DELETE" });
-    load(page);
+    mutate();
   };
 
   return (
@@ -140,7 +136,7 @@ const AdminProducts: NextPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {!loading &&
+                {!isLoading &&
                   products.map((product) => (
                     <tr key={product.id}>
                       <td className="px-4 py-2">
@@ -175,31 +171,31 @@ const AdminProducts: NextPage = () => {
                   ))}
               </tbody>
             </table>
-            {!loading && products.length === 0 && (
+            {!isLoading && products.length === 0 && (
               <p className="text-center text-sm text-gray-500 py-8">No products found.</p>
             )}
-            {loading && (
+            {isLoading && (
               <div className="flex justify-center py-12">
                 <Spinner />
               </div>
             )}
           </div>
 
-          {!loading && total > 0 && (
+          {!isLoading && total > 0 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-gray-500">
                 Page {page} of {totalPages} ({total} product{total === 1 ? "" : "s"})
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => load(page - 1)}
+                  onClick={() => setPage((p) => p - 1)}
                   disabled={page <= 1}
                   className="px-3 py-1.5 text-sm rounded-md border border-gray-300 disabled:opacity-40 hover:bg-gray-50"
                 >
                   Previous
                 </button>
                 <button
-                  onClick={() => load(page + 1)}
+                  onClick={() => setPage((p) => p + 1)}
                   disabled={page >= totalPages}
                   className="px-3 py-1.5 text-sm rounded-md border border-gray-300 disabled:opacity-40 hover:bg-gray-50"
                 >

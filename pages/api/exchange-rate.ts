@@ -9,6 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const rate = await getExchangeRateService().getEffectiveRate();
+    res.setHeader("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
     return res.status(200).json({ rate });
   } catch {
     return res.status(503).json({ message: "Exchange rate unavailable" });
