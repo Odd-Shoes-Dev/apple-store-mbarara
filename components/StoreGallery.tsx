@@ -48,11 +48,11 @@ const StoreGallery: FunctionComponent<StoreGalleryProps> = ({ images, title }) =
         )}
 
         {images.length >= 3 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:h-[28rem]">
-            <Tile image={images[0]} className="h-64 sm:h-full" />
-            <div className="grid grid-rows-2 gap-4 h-full">
-              <Tile image={images[1]} className="h-64 sm:h-full" />
-              <Tile image={images[2]} className="h-64 sm:h-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:h-96 overflow-hidden">
+            <Tile image={images[0]} className="h-64 sm:h-96" />
+            <div className="grid grid-rows-2 gap-4 sm:h-96">
+              <Tile image={images[1]} className="h-64 sm:h-[11.5rem]" />
+              <Tile image={images[2]} className="h-64 sm:h-[11.5rem]" />
             </div>
           </div>
         )}
