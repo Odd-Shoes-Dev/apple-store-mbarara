@@ -42,10 +42,10 @@ const QuickViewModal: FunctionComponent<Props> = ({ product, onClose }) => {
       <Dialog onClose={onClose} className="relative z-[1200]">
         <Transition.Child
           as={Fragment}
-          enter="duration-200 ease-out"
+          enter="transition-opacity duration-200 ease-out"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="duration-150 ease-in"
+          leave="transition-opacity duration-150 ease-in"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
@@ -55,10 +55,10 @@ const QuickViewModal: FunctionComponent<Props> = ({ product, onClose }) => {
         <div className="fixed inset-0 flex items-end sm:items-center justify-center">
           <Transition.Child
             as={Fragment}
-            enter="duration-250 ease-out"
+            enter="transition duration-250 ease-out"
             enterFrom="translate-y-full opacity-0 sm:translate-y-4"
             enterTo="translate-y-0 opacity-100"
-            leave="duration-200 ease-in"
+            leave="transition duration-200 ease-in"
             leaveFrom="translate-y-0 opacity-100"
             leaveTo="translate-y-full opacity-0 sm:translate-y-4"
           >
