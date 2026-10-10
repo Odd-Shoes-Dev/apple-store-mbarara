@@ -185,7 +185,7 @@ const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
               <LazyLoadImage
                 src={getProductImage(product)}
                 alt={getProductDescription(product)}
-                className="max-w-sm w-full h-full object-center object-cover"
+                className="max-w-sm w-full h-full object-center object-contain"
               />
             </div>
 
