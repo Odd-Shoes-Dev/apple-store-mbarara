@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import Head from "next/head";
+import SeoHead from "../components/SeoHead";
 import Header from "../components/Header";
 import PageHero from "../components/PageHero";
 import FeatureGrid, { FeatureItem } from "../components/FeatureGrid";
@@ -93,10 +93,11 @@ const faqs: FaqItem[] = [
 const DeliveryPage: NextPage = () => {
   return (
     <>
-      <Head>
-        <title>Delivery — Apple Store Mbarara</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+      <SeoHead
+        title="Delivery — Apple Store Mbarara"
+        description="Same-day delivery within Mbarara town, next-day across the region — how delivery works at Apple Store Mbarara."
+        image="/logo.png"
+      />
       <Header />
 
       <PageHero

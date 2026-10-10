@@ -3,10 +3,10 @@ import type {
   GetServerSidePropsContext,
   NextPage,
 } from "next";
-import Head from "next/head";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import Header from "../../components/Header";
 import Reveal from "../../components/Reveal";
+import SeoHead from "../../components/SeoHead";
 import {
   getProductPrice,
   getProductDescription,
@@ -21,6 +21,7 @@ import { Slide } from "@mui/material";
 import { getCatalogService, getSpecService, getReviewService } from "../../server/config/services";
 import { CONDITION_LABELS, Product, ProductSpec, Review } from "../../server/domain/types";
 import ProductCard from "../../components/ProductCard";
+import { getSiteOrigin } from "../../lib/siteUrl";
 
 interface CustomContext extends GetServerSidePropsContext {
   query: {
@@ -34,6 +35,7 @@ type Props = {
   related: Product[];
   specs: ProductSpec[];
   reviews: Review[];
+  pageUrl: string;
 };
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
@@ -59,11 +61,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       related: JSON.parse(JSON.stringify(related)),
       specs: JSON.parse(JSON.stringify(specs)),
       reviews: JSON.parse(JSON.stringify(reviews)),
+      pageUrl: `${getSiteOrigin(context.req)}${context.resolvedUrl}`,
     },
   };
 };
 
-const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
+const ProductPage: NextPage<Props> = ({ product, related, specs, reviews, pageUrl }) => {
   const { add, alert = null, isAlertVisible } = useContext(CartContext);
   const { formatProductPrice } = useDisplayCurrency();
   const [hideAlert, setHideAlert] = useState(false);
@@ -121,9 +124,7 @@ const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
   if (!product) {
     return (
       <>
-        <Head>
-          <title>Apple Store</title>
-        </Head>
+        <SeoHead title="Apple Store Mbarara" description="Genuine Apple products in Mbarara, Uganda." />
         <main>
           <Header />
           <p>Product not found</p>
@@ -158,10 +159,17 @@ const ProductPage: NextPage<Props> = ({ product, related, specs, reviews }) => {
 
   return (
     <>
-      <Head>
-        <title>{product.name} — Apple Store Mbarara</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+      <SeoHead
+        title={`${product.name} — Apple Store Mbarara`}
+        description={
+          product.description.length > 160
+            ? `${product.description.slice(0, 157)}...`
+            : product.description
+        }
+        image={getProductImage(product)}
+        url={pageUrl}
+        type="product"
+      />
 
       <main>
         <Header />

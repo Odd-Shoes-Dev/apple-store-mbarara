@@ -1,24 +1,26 @@
 import type { GetServerSideProps, NextPage } from "next";
-import Head from "next/head";
 import Link from "next/link";
 import Script from "next/script";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import NewArrivalCard from "../components/NewArrivalCard";
+import SeoHead from "../components/SeoHead";
 import { getCatalogService, getHeroService, getStoreGalleryService } from "../server/config/services";
 import { HeroSlide, Product, StoreGalleryImage } from "../server/domain/types";
 import HeroCarousel from "../components/HeroCarousel";
 import Reveal from "../components/Reveal";
 import StoreGallery from "../components/StoreGallery";
+import { getSiteOrigin } from "../lib/siteUrl";
 
 type Props = {
   featuredProducts: Product[];
   heroSlides: HeroSlide[];
   newArrivals: Product[];
   galleryImages: StoreGalleryImage[];
+  siteUrl: string;
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async () => {
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
   const catalogService = getCatalogService();
   const [featuredProducts, heroSlides, newArrivals, galleryImages] = await Promise.all([
     catalogService.listFeaturedProducts(),
@@ -33,6 +35,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
       heroSlides: JSON.parse(JSON.stringify(heroSlides)),
       newArrivals: JSON.parse(JSON.stringify(newArrivals)),
       galleryImages: JSON.parse(JSON.stringify(galleryImages)),
+      siteUrl: getSiteOrigin(context.req),
     },
   };
 };
@@ -100,7 +103,7 @@ const trustItems = [
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 
-const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrivals, galleryImages }) => {
+const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrivals, galleryImages, siteUrl }) => {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const [email, setEmail] = useState("");
   const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -118,10 +121,12 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
 
   return (
     <>
-      <Head>
-        <title>Apple Store Mbarara</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+      <SeoHead
+        title="Apple Store Mbarara"
+        description="Genuine Apple products — iPhone, MacBook, iPad, Watch and AirPods — with warranty and fast delivery across Mbarara, Uganda."
+        image={`${siteUrl}/logo.png`}
+        url={siteUrl}
+      />
       <Script
         type="module"
         src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"

@@ -6,12 +6,13 @@ import TabPills, { Tab } from "../components/TabPills";
 import { Fragment, useState, useEffect, useRef, useContext } from "react";
 import useSWRInfinite from "swr/infinite";
 import Spinner from "../components/Spinner";
-import Head from "next/head";
+import SeoHead from "../components/SeoHead";
 import CartContext from "../components/context/CartContext";
 import { Slide } from "@mui/material";
 import { Popover, Transition } from "@headlessui/react";
 import { SearchIcon, AdjustmentsIcon } from "@heroicons/react/outline";
 import { fetcher } from "../lib/swrFetcher";
+import { getSiteOrigin } from "../lib/siteUrl";
 import { getCatalogService, getCategoryService } from "../server/config/services";
 import { CategoryWithChildren, Product, ProductPage, ProductSort } from "../server/domain/types";
 
@@ -77,6 +78,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       tabs,
       initialTab,
       initialSearch,
+      siteUrl: getSiteOrigin(context.req),
     },
   };
 };
@@ -88,6 +90,7 @@ type Props = {
   tabs: Tab[];
   initialTab: string;
   initialSearch: string;
+  siteUrl: string;
 };
 
 interface Option {
@@ -106,7 +109,15 @@ function sortParamFor(value?: string): ProductSort {
   }
 }
 
-const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, tabs, initialTab, initialSearch }) => {
+const StorePage: NextPage<Props> = ({
+  initialProducts,
+  initialTotal,
+  navTree,
+  tabs,
+  initialTab,
+  initialSearch,
+  siteUrl,
+}) => {
   const [search, setSearch] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [selectedTab, setSelectedTab] = useState(initialTab);
@@ -216,9 +227,12 @@ const StorePage: NextPage<Props> = ({ initialProducts, initialTotal, navTree, ta
 
   return (
     <>
-      <Head>
-        <title>Shop — Apple Store Mbarara</title>
-      </Head>
+      <SeoHead
+        title="Shop — Apple Store Mbarara"
+        description="Browse genuine iPhone, MacBook, iPad, Watch and AirPods — fair pricing and fast delivery across Mbarara."
+        image={`${siteUrl}/logo.png`}
+        url={`${siteUrl}/store`}
+      />
       <main className="bg-gray-100 min-h-screen">
         <Header />
 

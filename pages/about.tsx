@@ -1,24 +1,27 @@
 import type { GetServerSideProps, NextPage } from "next";
-import Head from "next/head";
 import Header from "../components/Header";
 import PageHero from "../components/PageHero";
 import FeatureGrid, { FeatureItem } from "../components/FeatureGrid";
 import CtaBanner from "../components/CtaBanner";
 import StoreGallery from "../components/StoreGallery";
+import SeoHead from "../components/SeoHead";
 import { getStoreGalleryService } from "../server/config/services";
 import { StoreGalleryImage } from "../server/domain/types";
+import { getSiteOrigin } from "../lib/siteUrl";
 
 const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
 type Props = {
   galleryImages: StoreGalleryImage[];
+  siteUrl: string;
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async () => {
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
   const galleryImages = await getStoreGalleryService().listActive();
   return {
     props: {
       galleryImages: JSON.parse(JSON.stringify(galleryImages)),
+      siteUrl: getSiteOrigin(context.req),
     },
   };
 };
@@ -66,13 +69,15 @@ const values: FeatureItem[] = [
   },
 ];
 
-const AboutPage: NextPage<Props> = ({ galleryImages }) => {
+const AboutPage: NextPage<Props> = ({ galleryImages, siteUrl }) => {
   return (
     <>
-      <Head>
-        <title>About — Apple Store Mbarara</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+      <SeoHead
+        title="About — Apple Store Mbarara"
+        description="Mbarara's trusted source for genuine Apple products — our story, our store, and why customers choose us."
+        image={`${siteUrl}/logo.png`}
+        url={`${siteUrl}/about`}
+      />
       <Header />
 
       <PageHero

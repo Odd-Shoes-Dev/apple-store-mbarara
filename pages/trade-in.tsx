@@ -1,8 +1,8 @@
 import type { NextPage } from "next";
-import Head from "next/head";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import PageHero from "../components/PageHero";
+import SeoHead from "../components/SeoHead";
 
 const TradeInPage: NextPage = () => {
   const [form, setForm] = useState({
@@ -40,10 +40,11 @@ const TradeInPage: NextPage = () => {
 
   return (
     <>
-      <Head>
-        <title>Trade-in — Apple Store Mbarara</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+      <SeoHead
+        title="Trade-in — Apple Store Mbarara"
+        description="Trade in your old Apple device for credit toward your next purchase at Apple Store Mbarara."
+        image="/logo.png"
+      />
       <Header />
 
       <PageHero

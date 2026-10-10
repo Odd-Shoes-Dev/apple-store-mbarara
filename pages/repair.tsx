@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import Head from "next/head";
+import SeoHead from "../components/SeoHead";
 import { useState, FormEvent } from "react";
 import Header from "../components/Header";
 import PageHero from "../components/PageHero";
@@ -103,10 +103,11 @@ const RepairPage: NextPage = () => {
 
   return (
     <>
-      <Head>
-        <title>Repair — Apple Store Mbarara</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+      <SeoHead
+        title="Repair — Apple Store Mbarara"
+        description="Book a repair for your Apple device — screens, batteries, and more, serviced in Mbarara."
+        image="/logo.png"
+      />
       <Header />
 
       <PageHero
