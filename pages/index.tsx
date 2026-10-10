@@ -141,7 +141,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
       ) : (
         /* Default hero shown until the admin adds slides */
         <section
-          className="relative flex flex-col items-center text-center text-white overflow-hidden px-5 pt-20 pb-14"
+          className="relative flex flex-col items-center text-center text-white overflow-hidden px-5 pt-14 pb-10"
           style={{
             background: "radial-gradient(120% 100% at 50% 0%, #1c1c1e 0%, #000 55%)",
             minHeight: "88vh",
@@ -187,7 +187,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
             <p className="mt-4 font-medium max-w-md" style={{ fontSize: "clamp(1rem, 2vw, 1.3rem)", color: "#c7c7cc" }}>
               Authorized, affordable, and 5&nbsp;minutes from the taxi park.
             </p>
-            <div className="flex gap-3 mt-8 flex-wrap justify-center">
+            <div className="flex gap-3 mt-6 flex-wrap justify-center">
               <Link href="/store" passHref>
                 <a className="inline-flex items-center px-6 py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-85" style={{ background: "#0071e3" }}>
                   Shop now
@@ -210,9 +210,9 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
 
       {/* ── WHAT'S NEW ───────────────────────────────────────────── */}
       {newArrivals.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-12 bg-gray-50">
           <Reveal className="max-w-5xl mx-auto">
-            <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
+            <div className="flex items-baseline justify-between mb-5 px-5 lg:px-0">
               <h2
                 className="font-bold text-gray-900"
                 style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }}
@@ -241,9 +241,9 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
 
       {/* ── FEATURED ─────────────────────────────────────────────── */}
       {featuredProducts.length > 0 ? (
-        <section className="py-16 bg-white">
+        <section className="py-12 bg-white">
           <Reveal className="max-w-5xl mx-auto">
-            <div className="flex items-baseline justify-between mb-6 px-5 lg:px-0">
+            <div className="flex items-baseline justify-between mb-5 px-5 lg:px-0">
               <h2
                 className="font-bold text-gray-900"
                 style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }}
@@ -267,7 +267,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
           </Reveal>
         </section>
       ) : (
-        <section className="py-24 text-center bg-white">
+        <section className="py-16 text-center bg-white">
           <p className="text-gray-500 text-sm">
             No featured products yet.{" "}
             <Link href="/store" passHref>
@@ -282,7 +282,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
         className="relative overflow-hidden"
         style={{ background: "radial-gradient(120% 100% at 50% 100%, #1c1c1e 0%, #000 55%)" }}
       >
-        <Reveal className="max-w-5xl mx-auto px-5 lg:px-0 py-20 flex flex-col items-center text-center">
+        <Reveal className="max-w-5xl mx-auto px-5 lg:px-0 py-14 flex flex-col items-center text-center">
           <p className="text-sm font-semibold tracking-wide" style={{ color: "#86868b" }}>
             iPhone 17 Pro
           </p>
@@ -329,9 +329,9 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
       </section>
 
       {/* ── TRUST CARDS ───────────────────────────────────────────── */}
-      <section className="py-20 bg-gray-50 border-t border-gray-200">
+      <section className="py-14 bg-gray-50 border-t border-gray-200">
         <Reveal className="max-w-5xl mx-auto px-5 lg:px-0">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2
               className="font-bold text-gray-900"
               style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)", letterSpacing: "-0.03em" }}
@@ -368,13 +368,13 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
       <StoreGallery images={galleryImages} />
 
       {/* ── TRADE-IN CTA ──────────────────────────────────────────── */}
-      <section className="py-20 bg-white border-t border-gray-200">
+      <section className="py-14 bg-white border-t border-gray-200">
         <Reveal className="max-w-5xl mx-auto px-5 lg:px-0">
           <div className="rounded-3xl overflow-hidden flex flex-col sm:flex-row items-center gap-0" style={{ background: "linear-gradient(135deg,#1d1d1f 0%,#3a3a3c 100%)" }}>
             <div className="flex-1 px-10 py-14">
               <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: "#c9a15a" }}>Trade-in</p>
               <h2 className="text-3xl font-bold text-white mb-4" style={{ letterSpacing: "-0.02em" }}>Swap your old device</h2>
-              <p className="text-sm leading-relaxed mb-8" style={{ color: "#a1a1a6" }}>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: "#a1a1a6" }}>
                 Get a fair price for your old iPhone, Mac, or iPad and put it towards something new.
                 We assess every device and give you a quote same-day.
               </p>
@@ -398,7 +398,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
       </section>
 
       {/* ── FIND US ───────────────────────────────────────────────── */}
-      <section className="py-20 bg-white border-t border-gray-200">
+      <section className="py-14 bg-white border-t border-gray-200">
         <Reveal className="max-w-5xl mx-auto px-5 lg:px-0">
           <div
             className="overflow-hidden rounded-3xl grid grid-cols-1 sm:grid-cols-2"
@@ -419,7 +419,7 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
                 On High Street in the town centre easy parking, five minutes from the main taxi park.
               </p>
 
-              <div className="mt-8 flex flex-col gap-5">
+              <div className="mt-6 flex flex-col gap-5">
                 {/* Address */}
                 <div className="flex items-start gap-4">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a15a" strokeWidth="1.6" className="mt-0.5 flex-shrink-0">
@@ -474,12 +474,12 @@ const LandingPage: NextPage<Props> = ({ featuredProducts, heroSlides, newArrival
         </Reveal>
       </section>
       {/* ── NEWSLETTER ───────────────────────────────────────────── */}
-      <section className="py-20 bg-gray-50 border-t border-gray-200">
+      <section className="py-14 bg-gray-50 border-t border-gray-200">
         <Reveal className="max-w-lg mx-auto px-5 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ letterSpacing: "-0.02em" }}>
             Stay in the loop
           </h2>
-          <p className="text-sm text-gray-500 mb-8">
+          <p className="text-sm text-gray-500 mb-6">
             Get notified about new arrivals, deals, and store events.
           </p>
           {subState === "done" ? (

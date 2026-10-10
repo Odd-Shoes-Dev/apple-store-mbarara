@@ -25,7 +25,7 @@ const StoreGallery: FunctionComponent<StoreGalleryProps> = ({ images, title }) =
   if (images.length === 0) return null;
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-12 bg-white">
       <div className="max-w-5xl mx-auto px-5 lg:px-0">
         {title && (
           <h2
