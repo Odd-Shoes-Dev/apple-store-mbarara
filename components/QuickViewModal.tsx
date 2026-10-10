@@ -1,12 +1,11 @@
 import { Fragment, FunctionComponent, useContext, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import CartContext from "./context/CartContext";
 import { useDisplayCurrency } from "./context/DisplayCurrencyContext";
+import ImageCarousel from "./ImageCarousel";
 import {
   getProductDescription,
-  getProductImage,
   getProductName,
   getProductPrice,
 } from "../utils/computed";
@@ -62,7 +61,7 @@ const QuickViewModal: FunctionComponent<Props> = ({ product, onClose }) => {
             leaveFrom="translate-y-0 opacity-100"
             leaveTo="translate-y-full opacity-0 sm:translate-y-4"
           >
-            <Dialog.Panel className="w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-2xl sm:m-4 shadow-xl max-h-[88vh] overflow-y-auto relative">
+            <Dialog.Panel className="thin-scrollbar w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-2xl sm:m-4 shadow-xl max-h-[88vh] overflow-y-auto relative">
               {displayProduct && (
                 <>
                   <button
@@ -82,11 +81,12 @@ const QuickViewModal: FunctionComponent<Props> = ({ product, onClose }) => {
                   </div>
 
                   <div className="p-6 sm:p-8">
-                    <div className="h-48 flex items-center justify-center mb-4">
-                      <LazyLoadImage
-                        src={getProductImage(displayProduct)}
+                    <div className="mb-4">
+                      <ImageCarousel
+                        images={displayProduct.images}
                         alt={getProductDescription(displayProduct)}
-                        className={`max-h-full max-w-full object-contain ${outOfStock ? "opacity-50" : ""}`}
+                        mainClassName="h-48 flex items-center justify-center"
+                        imageClassName={`max-h-full max-w-full object-contain ${outOfStock ? "opacity-50" : ""}`}
                       />
                     </div>
 

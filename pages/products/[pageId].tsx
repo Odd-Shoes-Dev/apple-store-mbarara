@@ -3,10 +3,10 @@ import type {
   GetServerSidePropsContext,
   NextPage,
 } from "next";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import Header from "../../components/Header";
 import Reveal from "../../components/Reveal";
 import SeoHead from "../../components/SeoHead";
+import ImageCarousel from "../../components/ImageCarousel";
 import {
   getProductPrice,
   getProductDescription,
@@ -189,11 +189,12 @@ const ProductPage: NextPage<Props> = ({ product, related, specs, reviews, pageUr
 
           <Reveal className="max-w-5xl mx-auto px-5 lg:px-0 mt-6 pb-16 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-16">
             {/* Image — left on desktop, top on mobile */}
-            <div className="flex-1 flex items-center justify-center">
-              <LazyLoadImage
-                src={getProductImage(product)}
+            <div className="flex-1">
+              <ImageCarousel
+                images={product.images}
                 alt={getProductDescription(product)}
-                className="max-w-sm w-full h-full object-center object-contain"
+                mainClassName="flex items-center justify-center"
+                imageClassName="max-w-sm w-full h-full object-center object-contain"
               />
             </div>
 
