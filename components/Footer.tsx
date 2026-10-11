@@ -23,6 +23,9 @@ const supportLinks = [
 ];
 
 const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+const phoneNumber = process.env.NEXT_PUBLIC_PHONE_NUMBER;
+
+const STORE_ADDRESSES = ["AS Plaza, F12 — behind Fresco Building", "Bnk Shopping Mall, B038"];
 
 const Footer = () => (
   <footer className="bg-gray-50 border-t border-gray-200">
@@ -69,12 +72,19 @@ const Footer = () => (
         <div>
           <h5 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Store</h5>
           <ul className="space-y-2">
-            <li className="text-sm text-gray-500">High Street, Mbarara</li>
-            <li>
-              <a href="tel:+256780526527" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
-                +256 780 526 527
-              </a>
-            </li>
+            {STORE_ADDRESSES.map((address) => (
+              <li key={address} className="text-sm text-gray-500">{address}</li>
+            ))}
+            {phoneNumber && (
+              <li>
+                <a
+                  href={`tel:${phoneNumber.replace(/\s/g, "")}`}
+                  className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                >
+                  {phoneNumber}
+                </a>
+              </li>
+            )}
             {waNumber && (
               <li>
                 <a
