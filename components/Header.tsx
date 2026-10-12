@@ -173,9 +173,9 @@ const Header: FunctionComponent = () => {
 
                               <div className="ml-4 flex-1 flex flex-col">
                                 <div>
-                                  <div className="flex justify-between text-base font-medium text-gray-900">
+                                  <div className="text-base font-medium text-gray-900">
                                     <h3>{getProductName(product)}</h3>
-                                    <p className="ml-4 text-teal-600">
+                                    <p className="mt-1 text-teal-600">
                                       {formatProductPrice(getProductPrice(product), product.currency)}
                                     </p>
                                   </div>
