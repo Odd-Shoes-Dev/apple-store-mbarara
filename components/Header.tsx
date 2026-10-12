@@ -25,7 +25,7 @@ const NAV_LINKS = [
 ];
 
 const Header: FunctionComponent = () => {
-  const { items, remove, removeAll } = useContext(CartContext);
+  const { items, remove, removeAll, increment, decrement } = useContext(CartContext);
   const { currency, setCurrency, rate, formatProductPrice } = useDisplayCurrency();
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
@@ -41,18 +41,21 @@ const Header: FunctionComponent = () => {
     }
   };
 
-  const cartTotal = (items ?? []).reduce((sum, product) => {
-    const amount = getProductPrice(product);
-    if (product.currency === currency) return sum + amount;
+  const cartCount = (items ?? []).reduce((sum, line) => sum + line.quantity, 0);
+
+  const cartTotal = (items ?? []).reduce((sum, line) => {
+    const amount = getProductPrice(line.product) * line.quantity;
+    if (line.product.currency === currency) return sum + amount;
     if (rate === null) return sum; // converted total catches up once the rate loads
-    return sum + convertAmount(amount, product.currency, currency, rate);
+    return sum + convertAmount(amount, line.product.currency, currency, rate);
   }, 0);
 
   const whatsappOrderLink = (() => {
     if (!waNumber || !items || items.length === 0) return null;
-    const lines = items.map(
-      (product) => `- ${getProductName(product)} — ${formatProductPrice(getProductPrice(product), product.currency)}`
-    );
+    const lines = items.map((line) => {
+      const lineTotal = formatProductPrice(getProductPrice(line.product) * line.quantity, line.product.currency);
+      return `- ${getProductName(line.product)} x${line.quantity} — ${lineTotal}`;
+    });
     const message = [
       "Hi, I'd like to order:",
       ...lines,
@@ -142,7 +145,7 @@ const Header: FunctionComponent = () => {
                     aria-hidden="true"
                   />
                   <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">
-                    {items?.length}
+                    {cartCount}
                   </span>
                   <span className="sr-only">items in cart, view bag</span>
                 </Popover.Button>
@@ -161,7 +164,7 @@ const Header: FunctionComponent = () => {
                     <div className="max-w-2xl mx-auto px-4">
                       <ul role="list" className="divide-y divide-gray-200">
                         {items?.length !== 0 &&
-                          items?.map((product) => (
+                          items?.map(({ product, quantity }) => (
                             <li key={product.id} className="py-6 flex">
                               <div className="flex-shrink-0 w-24 h-24 border border-gray-200 rounded-md overflow-hidden">
                                 <img
@@ -180,16 +183,34 @@ const Header: FunctionComponent = () => {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="flex-1 flex items-center justify-between text-sm">
-                                  <div className="flex">
+                                <div className="flex-1 flex items-end justify-between text-sm mt-2">
+                                  <div className="flex items-center gap-2">
                                     <button
-                                      onClick={(e) => removeFromCart(product.id)}
+                                      onClick={() => decrement?.(product.id)}
                                       type="button"
-                                      className="font-medium text-rose-600 hover:text-rose-500"
+                                      aria-label="Decrease quantity"
+                                      className="w-7 h-7 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
                                     >
-                                      Remove
+                                      −
+                                    </button>
+                                    <span className="w-6 text-center font-medium text-gray-900">{quantity}</span>
+                                    <button
+                                      onClick={() => increment?.(product.id)}
+                                      type="button"
+                                      disabled={quantity >= product.stockCount}
+                                      aria-label="Increase quantity"
+                                      className="w-7 h-7 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
+                                      +
                                     </button>
                                   </div>
+                                  <button
+                                    onClick={(e) => removeFromCart(product.id)}
+                                    type="button"
+                                    className="font-medium text-rose-600 hover:text-rose-500"
+                                  >
+                                    Remove
+                                  </button>
                                 </div>
                               </div>
                             </li>

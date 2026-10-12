@@ -2,6 +2,7 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import CartContext, {
   CartContextProps,
+  CartLine,
 } from "../components/context/CartContext";
 import { DisplayCurrencyProvider } from "../components/context/DisplayCurrencyContext";
 import { QuickViewProvider } from "../components/context/QuickViewContext";
@@ -18,7 +19,7 @@ import { Product } from "../server/domain/types";
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const showFooter = !router.pathname.startsWith("/admin");
-  const [items, setItems] = useState<Product[]>([]);
+  const [items, setItems] = useState<CartLine[]>([]);
   const [alert, setAlert] = useState<ReactElement | null>(null);
   const [alertVisible, setAlertVisible] = useState<boolean | undefined>(false);
   const [routeLoading, setRouteLoading] = useState(false);
@@ -43,46 +44,78 @@ function MyApp({ Component, pageProps }: AppProps) {
   }
 
   const remove = (productID: string) => {
-    let i = _.reject(items, function (item) {
-      return item.id === productID;
-    });
-    setItems(i);
+    setItems(_.reject(items, (line) => line.product.id === productID));
   };
 
   const removeAll = () => {
-    let i = _.reject(items);
-    setItems(i);
+    setItems([]);
   };
 
-  const add = (product: Product) => {
-    const isProductInCart = items.some((item) => item.id === product.id);
-    if (!isProductInCart) {
-      let updatedItems = [...items, product];
-      setItems(updatedItems);
-      setAlert(
-        <Alert
-          style={{ fontSize: "1rem", padding: "0.5rem" }}
-          severity="success"
-        >
-          Successfully added
-        </Alert>
-      );
-      setAlertVisible(true);
-      playSound("notification-success.mp3");
-    } else {
-      setAlert(
-        <Alert style={{ fontSize: "1rem", padding: "0.5rem" }} severity="info">
-          Already added
-        </Alert>
-      );
-      setAlertVisible(true);
-      playSound("notification-warning.mp3");
-    }
-
+  const showAlert = (node: ReactElement, sound: string) => {
+    setAlert(node);
+    setAlertVisible(true);
+    playSound(sound);
     setTimeout(() => {
       setAlert(null);
       setAlertVisible(false);
     }, 2000);
+  };
+
+  const add = (product: Product) => {
+    const existing = items.find((line) => line.product.id === product.id);
+
+    if (!existing) {
+      setItems([...items, { product, quantity: 1 }]);
+      showAlert(
+        <Alert style={{ fontSize: "1rem", padding: "0.5rem" }} severity="success">
+          Added to bag
+        </Alert>,
+        "notification-success.mp3"
+      );
+      return;
+    }
+
+    if (existing.quantity >= product.stockCount) {
+      showAlert(
+        <Alert style={{ fontSize: "1rem", padding: "0.5rem" }} severity="warning">
+          Only {product.stockCount} in stock
+        </Alert>,
+        "notification-warning.mp3"
+      );
+      return;
+    }
+
+    setItems(
+      items.map((line) =>
+        line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line
+      )
+    );
+    showAlert(
+      <Alert style={{ fontSize: "1rem", padding: "0.5rem" }} severity="success">
+        Added to bag
+      </Alert>,
+      "notification-success.mp3"
+    );
+  };
+
+  const increment = (productID: string) => {
+    const line = items.find((l) => l.product.id === productID);
+    if (!line || line.quantity >= line.product.stockCount) return;
+    setItems(
+      items.map((l) => (l.product.id === productID ? { ...l, quantity: l.quantity + 1 } : l))
+    );
+  };
+
+  const decrement = (productID: string) => {
+    const line = items.find((l) => l.product.id === productID);
+    if (!line) return;
+    if (line.quantity <= 1) {
+      remove(productID);
+      return;
+    }
+    setItems(
+      items.map((l) => (l.product.id === productID ? { ...l, quantity: l.quantity - 1 } : l))
+    );
   };
 
   const cartContext: CartContextProps = {
@@ -90,6 +123,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     add: add,
     remove: remove,
     removeAll: removeAll,
+    increment: increment,
+    decrement: decrement,
     alert: alert,
     isAlertVisible: alertVisible,
   };
